@@ -83,11 +83,11 @@
         },
         "audit": {
             "abandoned": "report"
-        }
-    },
-    "policy": {
-        "advisories": {
-            "block": false
+        },
+        "policy": {
+            "advisories": {
+                "block": false
+            }
         }
     },
     "minimum-stability": "stable",
