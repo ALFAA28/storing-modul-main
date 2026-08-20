@@ -1,39 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import LoginPage from './pages/LoginPage';
+import SSOCallback from './pages/SSOCallback';
 import DashboardGuru from './pages/DashboardGuru';
 import DashboardAdmin from './pages/DashboardAdmin';
 import UploadModal from './components/UploadModal';
 import ReviewModal from './components/ReviewModal';
 import { authService } from './services/api';
 
+// Protected Route wrapper
+function ProtectedRoute({ children }) {
+  if (!authService.isLoggedIn()) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
 export default function App() {
-  const [role, setRole] = useState('guru'); // Default role for demo
+  const [user, setUser] = useState(authService.getUser());
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [selectedReviewDoc, setSelectedReviewDoc] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const role = user?.role || 'guru';
+
+  // Listen for storage changes (e.g. after login)
+  useEffect(() => {
+    const handleStorage = () => {
+      setUser(authService.getUser());
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   const triggerRefresh = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  useEffect(() => {
-    const autoLogin = async () => {
-      try {
-        let email = 'guru@sekolah.com';
-        if (role === 'admin') {
-          email = 'admin@sekolah.com';
-        }
-        
-        await authService.login(email, 'password123');
-        console.log(`Auto logged in as ${email}. Token stored.`);
-        triggerRefresh();
-      } catch (err) {
-        console.error("Gagal melakukan auto login ke backend:", err);
-      }
-    };
-    autoLogin();
-  }, [role]);
+  const handleLoginSuccess = () => {
+    setUser(authService.getUser());
+  };
+
+  const handleLogout = async () => {
+    await authService.logout();
+    setUser(null);
+  };
 
   const handleOpenReview = (doc) => {
     setSelectedReviewDoc(doc);
@@ -41,42 +53,72 @@ export default function App() {
 
   return (
     <Router>
-      <Layout 
-        role={role} 
-        setRole={setRole} 
-        onUploadClick={() => setIsUploadOpen(true)}
-      >
-        <Routes>
-          {/* Guru Route */}
-          <Route 
-            path="/guru" 
-            element={
-              <DashboardGuru 
-                onOpenUpload={() => setIsUploadOpen(true)} 
-                refreshTrigger={refreshTrigger}
-                onOpenReview={handleOpenReview}
-              />
-            } 
-          />
-          
-          {/* Admin Route */}
-          <Route 
-            path="/admin" 
-            element={
-              <DashboardAdmin 
-                refreshTrigger={refreshTrigger}
-                onOpenReview={handleOpenReview}
-              />
-            } 
-          />
+      <Routes>
+        {/* Login Route (public) */}
+        <Route 
+          path="/login" 
+          element={
+            authService.isLoggedIn() 
+              ? <Navigate to={role === 'admin' ? '/admin' : '/guru'} replace /> 
+              : <LoginPage onLoginSuccess={handleLoginSuccess} />
+          } 
+        />
 
-          {/* Fallback Redirection */}
-          <Route 
-            path="*" 
-            element={<Navigate to={role === 'guru' ? '/guru' : '/admin'} replace />} 
-          />
-        </Routes>
-      </Layout>
+        {/* SSO Callback Route */}
+        <Route path="/sso-callback" element={<SSOCallback />} />
+
+        {/* Guru Route (protected) */}
+        <Route 
+          path="/guru" 
+          element={
+            <ProtectedRoute>
+              <Layout 
+                role={role} 
+                user={user}
+                onUploadClick={() => setIsUploadOpen(true)}
+                onLogout={handleLogout}
+              >
+                <DashboardGuru 
+                  user={user}
+                  onOpenUpload={() => setIsUploadOpen(true)} 
+                  refreshTrigger={refreshTrigger}
+                  onOpenReview={handleOpenReview}
+                />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Admin Route (protected) */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute>
+              <Layout 
+                role={role} 
+                user={user}
+                onUploadClick={() => setIsUploadOpen(true)}
+                onLogout={handleLogout}
+              >
+                <DashboardAdmin 
+                  refreshTrigger={refreshTrigger}
+                  onOpenReview={handleOpenReview}
+                />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Fallback Redirection */}
+        <Route 
+          path="*" 
+          element={
+            authService.isLoggedIn()
+              ? <Navigate to={role === 'admin' ? '/admin' : '/guru'} replace />
+              : <Navigate to="/login" replace />
+          } 
+        />
+      </Routes>
 
       {/* Upload Modal (Guru) */}
       <UploadModal 

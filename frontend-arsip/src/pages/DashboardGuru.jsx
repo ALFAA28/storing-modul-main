@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { FileText, Plus, Search, Filter, HelpCircle, Eye, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { modulService } from '../services/api';
 
-export default function DashboardGuru({ onOpenUpload, refreshTrigger, onOpenReview }) {
+export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOpenReview }) {
   const [searchParams] = useSearchParams();
   const isListTab = searchParams.get('tab') === 'list';
 
@@ -68,7 +68,7 @@ export default function DashboardGuru({ onOpenUpload, refreshTrigger, onOpenRevi
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-xl font-extrabold text-slate-800 tracking-tight sm:text-2xl">
-                Halo, Budi Santoso, S.Pd 👋
+                Halo, {user?.name || 'Guru'} 👋
               </h1>
               <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
                 Berikut adalah ringkasan perangkat pembelajaran yang Anda unggah semester ini.

@@ -1,8 +1,8 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { BookOpen, LayoutDashboard, FileText, UploadCloud, Users, Settings } from 'lucide-react';
+import { BookOpen, LayoutDashboard, FileText, UploadCloud, Users } from 'lucide-react';
 
-export default function Sidebar({ role, onUploadClick }) {
+export default function Sidebar({ role, user, onUploadClick }) {
   const isGuru = role === 'guru';
   
   const menuItems = isGuru 
@@ -14,6 +14,12 @@ export default function Sidebar({ role, onUploadClick }) {
         { name: 'Dashboard Admin', path: '/admin', icon: LayoutDashboard },
         { name: 'Data Master Modul', path: '/admin?tab=master', icon: Users },
       ];
+
+  // Get user initials for avatar
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  };
 
   return (
     <aside className="w-64 bg-slate-900 text-slate-350 flex flex-col h-screen fixed left-0 top-0 z-30 border-r border-slate-800">
@@ -66,18 +72,18 @@ export default function Sidebar({ role, onUploadClick }) {
         )}
       </nav>
 
-      {/* Footer Info */}
+      {/* Footer Info - Dynamic User */}
       <div className="p-4 border-t border-slate-800/80 bg-slate-950/20 shrink-0">
         <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl bg-slate-800/30">
           <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-indigo-400">
-            {isGuru ? 'BS' : 'MY'}
+            {getInitials(user?.name)}
           </div>
           <div className="overflow-hidden">
             <p className="text-xs font-semibold text-slate-200 truncate">
-              {isGuru ? 'Budi Santoso, S.Pd' : 'Drs. H. Mulyono, M.Pd'}
+              {user?.name || 'User'}
             </p>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate">
-              {role}
+              {role === 'admin' ? 'Admin / Pengawas' : 'Guru'}
             </p>
           </div>
         </div>

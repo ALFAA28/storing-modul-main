@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
-export default function Layout({ children, role, setRole, onUploadClick }) {
+export default function Layout({ children, role, user, onUploadClick, onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-row">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block w-64 shrink-0">
-        <Sidebar role={role} onUploadClick={onUploadClick} />
+        <Sidebar role={role} user={user} onUploadClick={onUploadClick} />
       </div>
 
       {/* Mobile Sidebar Backdrop & Drawer */}
@@ -23,15 +23,16 @@ export default function Layout({ children, role, setRole, onUploadClick }) {
       <div className={`fixed inset-y-0 left-0 w-64 z-50 transform lg:hidden transition-transform duration-350 ease-in-out bg-slate-900 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
-        <Sidebar role={role} onUploadClick={onUploadClick} />
+        <Sidebar role={role} user={user} onUploadClick={onUploadClick} />
       </div>
 
       {/* Right Column: Header & Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header 
           role={role} 
-          setRole={setRole} 
-          toggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
+          user={user}
+          toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onLogout={onLogout}
         />
         <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto overflow-y-auto">
           {children}
