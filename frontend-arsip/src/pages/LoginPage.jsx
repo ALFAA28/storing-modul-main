@@ -3,7 +3,7 @@ import { BookOpen, LogIn, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   
-  const absensiFrontendUrl = 'https://absensi-sekolah.vercel.app'; // Ganti dengan URL asli absensi jika berbeda
+  const absensiFrontendUrl = 'https://absensi-smk-nu-donomulyo.vercel.app';
   // In a real environment you'd use window.location.origin
   const currentUrl = window.location.origin;
 
