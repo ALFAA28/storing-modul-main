@@ -1,15 +1,32 @@
-FROM richarvey/nginx-php-fpm:latest
+FROM php:8.3-cli
 
-# Copy seluruh file proyek ke container
-COPY . /var/www/html
+# Install dependensi sistem dan PostgreSQL driver (untuk CockroachDB)
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    zip \
+    unzip \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set konfigurasi Webroot ke folder public Laravel
-ENV WEBROOT /var/www/html/public
-ENV PHP_ERRORS_STDERR 1
-ENV RUN_SCRIPTS 1
-ENV REAL_IP_HEADER 1
+RUN docker-php-ext-install pdo pdo_pgsql pgsql
 
-# Install dependency composer dengan flag --ignore-platform-reqs agar tidak gagal di versi PHP
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy kodingan ke container
+WORKDIR /var/www
+COPY . /var/www
+
+# Install dependencies (tambahkan ignore-platform-reqs agar build di Render tidak crash)
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-EXPOSE 80
+# Atur hak akses folder storage & cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Render menggunakan variabel PORT dinamis (default 10000), tentukan port 8000
+EXPOSE 8000
+
+# Jalankan migration lalu serve
+CMD php artisan config:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000
