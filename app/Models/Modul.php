@@ -38,7 +38,15 @@ class Modul extends Model
 
     public function getFilePathAttribute()
     {
-        return $this->file_pdf_path ? asset('storage/' . $this->file_pdf_path) : null;
+        if (!$this->file_pdf_path) return null;
+
+        // Jika path sudah berupa URL utuh (Cloudinary), langsung kembalikan URL-nya
+        if (str_starts_with($this->file_pdf_path, 'http')) {
+            return $this->file_pdf_path;
+        }
+
+        // Jika path lokal, gabungkan dengan asset storage
+        return asset('storage/' . $this->file_pdf_path);
     }
 
     public function getStatusAttribute($value)

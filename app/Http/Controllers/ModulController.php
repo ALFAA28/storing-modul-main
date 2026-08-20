@@ -57,7 +57,36 @@ class ModulController extends Controller
             'file_pdf' => 'required|mimes:pdf|max:5120', 
         ]);
 
-        $path = $request->file('file_pdf')->store('arsip_dokumen', 'public');
+        $file = $request->file('file_pdf');
+        $cloudinaryUrl = env('CLOUDINARY_URL');
+
+        if ($cloudinaryUrl) {
+            // Upload to Cloudinary using direct REST API
+            $parsed = parse_url($cloudinaryUrl);
+            $apiKey = $parsed['user'] ?? '';
+            $apiSecret = $parsed['pass'] ?? '';
+            $cloudName = $parsed['host'] ?? '';
+
+            $timestamp = time();
+            $signature = sha1("timestamp=" . $timestamp . $apiSecret);
+
+            $response = \Illuminate\Support\Facades\Http::attach(
+                'file', file_get_contents($file->getRealPath()), $file->getClientOriginalName()
+            )->post('https://api.cloudinary.com/v1_1/' . $cloudName . '/auto/upload', [
+                'api_key' => $apiKey,
+                'timestamp' => $timestamp,
+                'signature' => $signature
+            ]);
+
+            if ($response->successful()) {
+                $path = $response->json('secure_url');
+            } else {
+                return response()->json(['message' => 'Gagal upload file ke Cloudinary.'], 500);
+            }
+        } else {
+            // Fallback to local storage if Cloudinary is not configured
+            $path = $file->store('arsip_dokumen', 'public');
+        }
 
         $modul = Modul::create([
             'user_id' => Auth::id(),

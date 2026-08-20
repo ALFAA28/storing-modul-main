@@ -30,4 +30,4 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
 EXPOSE 8000
 
 # Jalankan discovery, cache, migration, lalu serve saat container running
-CMD sh -c "php artisan package:discover --ansi && php artisan config:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
+CMD sh -c "php artisan storage:link && php artisan package:discover --ansi && php artisan config:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
