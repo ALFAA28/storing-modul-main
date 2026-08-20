@@ -23,9 +23,9 @@ export default function SSOCallback() {
         
         // Login berhasil, token & user sudah disimpan oleh authService
         if (role === 'admin' || role === 'pengawas') {
-          navigate('/admin', { replace: true });
+          window.location.href = '/admin';
         } else {
-          navigate('/guru', { replace: true });
+          window.location.href = '/guru';
         }
       } catch (err) {
         setError(err.response?.data?.message || 'Gagal memverifikasi sesi dengan server Absensi.');
