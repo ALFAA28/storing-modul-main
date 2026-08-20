@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FileText, Plus, Search, Filter, HelpCircle, Eye, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { modulService } from '../services/api';
 
 export default function DashboardGuru({ onOpenUpload, refreshTrigger, onOpenReview }) {
+  const [searchParams] = useSearchParams();
+  const isListTab = searchParams.get('tab') === 'list';
+
   const [moduls, setModuls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,73 +62,77 @@ export default function DashboardGuru({ onOpenUpload, refreshTrigger, onOpenRevi
   return (
     <div className="space-y-6">
       
-      {/* Welcome Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-slate-800 tracking-tight sm:text-2xl">
-            Halo, Budi Santoso, S.Pd 👋
-          </h1>
-          <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
-            Berikut adalah ringkasan perangkat pembelajaran yang Anda unggah semester ini.
-          </p>
-        </div>
-        <button
-          onClick={onOpenUpload}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-650 hover:bg-indigo-750 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/25 transition-all duration-200 cursor-pointer self-start sm:self-center"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Unggah Perangkat Baru</span>
-        </button>
-      </div>
+      {!isListTab && (
+        <>
+          {/* Welcome Banner */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-extrabold text-slate-800 tracking-tight sm:text-2xl">
+                Halo, Budi Santoso, S.Pd 👋
+              </h1>
+              <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
+                Berikut adalah ringkasan perangkat pembelajaran yang Anda unggah semester ini.
+              </p>
+            </div>
+            <button
+              onClick={onOpenUpload}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-650 hover:bg-indigo-750 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/25 transition-all duration-200 cursor-pointer self-start sm:self-center"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Unggah Perangkat Baru</span>
+            </button>
+          </div>
 
-      {/* Stats Section */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        {/* Total Card */}
-        <div className="glass-card shadow-premium p-4 sm:p-5 rounded-2xl flex items-center justify-between group hover:scale-[1.01] transition-all-custom">
-          <div>
-            <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Total Perangkat</p>
-            <h3 className="text-2xl font-extrabold text-slate-800 mt-1">{stats.total}</h3>
-          </div>
-          <div className="p-3 bg-indigo-50 text-indigo-650 rounded-xl">
-            <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
-          </div>
-        </div>
+          {/* Stats Section */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Total Card */}
+            <div className="glass-card shadow-premium p-4 sm:p-5 rounded-2xl flex items-center justify-between group hover:scale-[1.01] transition-all-custom">
+              <div>
+                <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Total Perangkat</p>
+                <h3 className="text-2xl font-extrabold text-slate-800 mt-1">{stats.total}</h3>
+              </div>
+              <div className="p-3 bg-indigo-50 text-indigo-650 rounded-xl">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+            </div>
 
-        {/* ACC Card */}
-        <div className="glass-card shadow-premium p-4 sm:p-5 rounded-2xl flex items-center justify-between group hover:scale-[1.01] transition-all-custom">
-          <div>
-            <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Disetujui / ACC</p>
-            <h3 className="text-2xl font-extrabold text-emerald-650 mt-1">{stats.acc}</h3>
-          </div>
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-            <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-          </div>
-        </div>
+            {/* ACC Card */}
+            <div className="glass-card shadow-premium p-4 sm:p-5 rounded-2xl flex items-center justify-between group hover:scale-[1.01] transition-all-custom">
+              <div>
+                <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Disetujui / ACC</p>
+                <h3 className="text-2xl font-extrabold text-emerald-650 mt-1">{stats.acc}</h3>
+              </div>
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+            </div>
 
-        {/* Pending Card */}
-        <div className="glass-card shadow-premium p-4 sm:p-5 rounded-2xl flex items-center justify-between group hover:scale-[1.01] transition-all-custom">
-          <div>
-            <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Menunggu Review</p>
-            <h3 className="text-2xl font-extrabold text-amber-650 mt-1">{stats.pending}</h3>
-          </div>
-          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
-            <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
-          </div>
-        </div>
+            {/* Pending Card */}
+            <div className="glass-card shadow-premium p-4 sm:p-5 rounded-2xl flex items-center justify-between group hover:scale-[1.01] transition-all-custom">
+              <div>
+                <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Menunggu Review</p>
+                <h3 className="text-2xl font-extrabold text-amber-650 mt-1">{stats.pending}</h3>
+              </div>
+              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+            </div>
 
-        {/* Revisi Card */}
-        <div className="glass-card shadow-premium p-4 sm:p-5 rounded-2xl flex items-center justify-between group hover:scale-[1.01] transition-all-custom">
-          <div>
-            <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Perlu Revisi</p>
-            <h3 className="text-2xl font-extrabold text-rose-650 mt-1">{stats.revisi}</h3>
-          </div>
-          <div className="p-3 bg-rose-50 text-rose-600 rounded-xl">
-            <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-          </div>
-        </div>
+            {/* Revisi Card */}
+            <div className="glass-card shadow-premium p-4 sm:p-5 rounded-2xl flex items-center justify-between group hover:scale-[1.01] transition-all-custom">
+              <div>
+                <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Perlu Revisi</p>
+                <h3 className="text-2xl font-extrabold text-rose-650 mt-1">{stats.revisi}</h3>
+              </div>
+              <div className="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+            </div>
 
-      </div>
+          </div>
+        </>
+      )}
 
       {/* Filter and Table Section */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-premium overflow-hidden">
