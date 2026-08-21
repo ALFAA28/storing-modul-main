@@ -51,11 +51,10 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
   };
 
   const pdfUrl = doc.file_path || '';
-  const isCloudUrl = pdfUrl.startsWith('http');
-  // Use Google Docs Viewer for reliable cross-origin cloud PDF rendering
-  const viewerUrl = isCloudUrl 
-    ? `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true` 
-    : `${pdfUrl}#toolbar=0&navpanes=0`;
+  const [useGoogleViewer, setUseGoogleViewer] = useState(false);
+
+  const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+  const directPdfUrl = `${pdfUrl}#toolbar=1&navpanes=0`;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-0 md:p-6 transition-all duration-300">
@@ -97,11 +96,18 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
                 Penampil Berkas PDF
               </span>
               <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setUseGoogleViewer(!useGoogleViewer)}
+                  className="text-[10px] font-semibold text-slate-400 hover:text-white transition-colors underline cursor-pointer"
+                >
+                  {useGoogleViewer ? 'Ganti ke Native Viewer' : 'Ganti ke Google Viewer'}
+                </button>
                 <a 
                   href={pdfUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                  className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800/50"
                 >
                   <span>Buka Tab Baru</span>
                   <ExternalLink className="w-3 h-3" />
@@ -109,15 +115,43 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
               </div>
             </div>
 
-            {/* Embedded PDF iframe */}
-            <div className="flex-1 bg-slate-800 flex items-center justify-center relative">
+            {/* Embedded PDF iframe / object */}
+            <div className="flex-1 bg-slate-800 flex items-center justify-center relative overflow-hidden">
               {pdfUrl ? (
-                <iframe
-                  src={viewerUrl}
-                  title="Preview PDF"
-                  className="w-full h-full border-none bg-white"
-                  loading="lazy"
-                />
+                useGoogleViewer ? (
+                  <iframe
+                    src={googleViewerUrl}
+                    title="Preview PDF via Google Viewer"
+                    className="w-full h-full border-none bg-white"
+                    loading="lazy"
+                  />
+                ) : (
+                  <object
+                    data={directPdfUrl}
+                    type="application/pdf"
+                    className="w-full h-full border-none bg-slate-800"
+                  >
+                    <iframe
+                      src={directPdfUrl}
+                      title="Preview PDF Native"
+                      className="w-full h-full border-none bg-slate-800"
+                    >
+                      <div className="text-center p-6 text-slate-300 space-y-3">
+                        <FileText className="w-12 h-12 mx-auto text-indigo-400" />
+                        <p className="text-sm font-semibold">Pratinjau PDF tidak dapat dimuat otomatis.</p>
+                        <a
+                          href={pdfUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          <span>Buka / Unduh Berkas PDF</span>
+                        </a>
+                      </div>
+                    </iframe>
+                  </object>
+                )
               ) : (
                 <div className="text-center p-6 text-slate-400">
                   <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
