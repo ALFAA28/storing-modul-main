@@ -88,13 +88,15 @@ class ModulController extends Controller
             $path = $file->store('arsip_dokumen', 'public');
         }
 
+        $isAdmin = in_array(Auth::user()->role, ['admin', 'pengawas']);
+
         $modul = Modul::create([
             'user_id' => Auth::id(),
             'mapel_id' => $request->mapel_id,
             'judul' => $request->judul,
             'jenis_perangkat' => $request->jenis_perangkat,
             'file_pdf_path' => $path,
-            'status' => 'pending',
+            'status' => $isAdmin ? 'acc' : 'pending',
         ]);
 
         return response()->json([

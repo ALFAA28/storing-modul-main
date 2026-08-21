@@ -117,6 +117,7 @@ export default function App() {
                   refreshTrigger={refreshTrigger}
                   onOpenReview={handleOpenReview}
                   onOpenEdit={handleOpenEdit}
+                  onOpenUpload={handleOpenNewUpload}
                 />
               </Layout>
             </ProtectedRoute>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { FileText, Search, ShieldAlert, CheckCircle, Clock, Eye, AlertCircle, RefreshCw, Trash2, Edit3 } from 'lucide-react';
+import { FileText, Search, ShieldAlert, CheckCircle, Clock, Eye, AlertCircle, RefreshCw, Trash2, Edit3, Plus } from 'lucide-react';
 import { modulService } from '../services/api';
 
-export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdit }) {
+export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdit, onOpenUpload }) {
   const [searchParams] = useSearchParams();
   const isMasterTab = searchParams.get('tab') === 'master';
 
@@ -92,13 +92,22 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
                 Tinjau, verifikasi, dan kelola perangkat pembelajaran yang diunggah oleh seluruh guru.
               </p>
             </div>
-            <button
-              onClick={loadModuls}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Segarkan Data</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={loadModuls}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Segarkan</span>
+              </button>
+              <button
+                onClick={onOpenUpload}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all duration-200 cursor-pointer self-start sm:self-center"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Unggah Perangkat Baru</span>
+              </button>
+            </div>
           </div>
 
           {/* Stats Section */}

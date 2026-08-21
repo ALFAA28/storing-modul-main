@@ -59,17 +59,15 @@ export default function Sidebar({ role, user, onUploadClick }) {
           );
         })}
 
-        {isGuru && (
-          <div className="pt-4">
-            <button
-              onClick={onUploadClick}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-indigo-500 hover:bg-indigo-600 text-white shadow-md shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all duration-250 cursor-pointer"
-            >
-              <UploadCloud className="w-4 h-4 animate-pulse" />
-              <span>Unggah Dokumen</span>
-            </button>
-          </div>
-        )}
+        <div className="pt-4">
+          <button
+            onClick={onUploadClick}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-indigo-500 hover:bg-indigo-600 text-white shadow-md shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all duration-250 cursor-pointer"
+          >
+            <UploadCloud className="w-4 h-4 animate-pulse" />
+            <span>Unggah Dokumen</span>
+          </button>
+        </div>
       </nav>
 
       {/* Footer Info - Dynamic User */}
