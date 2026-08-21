@@ -10,4 +10,8 @@ class Mapel extends Model
         'nama_mapel',
         'tingkat_kelas',
     ];
+
+    protected $casts = [
+        'id' => 'string',
+    ];
 }

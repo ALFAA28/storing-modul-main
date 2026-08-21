@@ -54,7 +54,7 @@ class ModulController extends Controller
             'judul' => 'required|string|max:255',
             'mapel_id' => 'required|exists:mapels,id',
             'jenis_perangkat' => 'required|in:modul,prota,promes',
-            'file_pdf' => 'required|mimes:pdf|max:5120', 
+            'file_pdf' => 'required|mimes:pdf|max:10240', 
         ]);
 
         $file = $request->file('file_pdf');

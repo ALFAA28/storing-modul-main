@@ -9,6 +9,12 @@ class Modul extends Model
     // Mengizinkan semua kolom diisi
     protected $guarded = []; 
 
+    protected $casts = [
+        'id' => 'string',
+        'user_id' => 'string',
+        'mapel_id' => 'string',
+    ];
+
     protected $appends = ['mapel', 'jenis', 'file_path'];
 
     public function user() {
