@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, FileText, Upload, AlertCircle, CheckCircle, Plus } from 'lucide-react';
+import { X, FileText, Upload, AlertCircle, CheckCircle, Edit3 } from 'lucide-react';
 import { modulService, mapelService } from '../services/api';
 
-export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
+export default function UploadModal({ isOpen, editData = null, onClose, onUploadSuccess }) {
   if (!isOpen) return null;
+
+  const isEdit = !!editData;
 
   const [judul, setJudul] = useState('');
   const [mapelId, setMapelId] = useState('');
@@ -36,8 +38,30 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   useEffect(() => {
     if (isOpen) {
       fetchMapels();
+      if (editData) {
+        setJudul(editData.judul || '');
+        setMapelId(editData.mapel_id ? String(editData.mapel_id) : '');
+        
+        // Capitalize jenis properly (Modul/Prota/Promes)
+        const j = editData.jenis || editData.jenis_perangkat || '';
+        if (j.toLowerCase() === 'modul') setJenis('Modul');
+        else if (j.toLowerCase() === 'prota') setJenis('Prota');
+        else if (j.toLowerCase() === 'promes') setJenis('Promes');
+        else setJenis(j);
+
+        setFile(null);
+        setError('');
+        setSuccess(false);
+      } else {
+        setJudul('');
+        setMapelId('');
+        setJenis('');
+        setFile(null);
+        setError('');
+        setSuccess(false);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, editData]);
 
   const jenisOptions = [
     { value: 'Modul', label: 'Modul Ajar / RPP' },
@@ -106,7 +130,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
       });
       const created = res.data;
       setMapels(prev => [...prev, created]);
-      setMapelId(created.id);
+      setMapelId(String(created.id));
       setNewMapelNama('');
       setShowAddMapel(false);
     } catch (err) {
@@ -132,7 +156,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
       setError('Silakan pilih Jenis Perangkat.');
       return;
     }
-    if (!file) {
+    if (!isEdit && !file) {
       setError('Wajib mengunggah file perangkat pembelajaran (.pdf).');
       return;
     }
@@ -144,13 +168,18 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
       formData.append('judul', judul.trim());
       formData.append('mapel_id', mapelId);
       formData.append('jenis_perangkat', jenis.toLowerCase());
-      formData.append('file_pdf', file);
+      if (file) {
+        formData.append('file_pdf', file);
+      }
 
-      await modulService.uploadModul(formData);
+      if (isEdit) {
+        await modulService.updateModul(editData.id, formData);
+      } else {
+        await modulService.uploadModul(formData);
+      }
       
       setSuccess(true);
       setTimeout(() => {
-        // Reset form & close modal
         setJudul('');
         setMapelId('');
         setJenis('');
@@ -161,7 +190,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
       }, 1500);
 
     } catch (err) {
-      setError(err.response?.data?.message || 'Gagal mengunggah modul. Silakan coba kembali.');
+      setError(err.response?.data?.message || 'Gagal menyimpan modul. Silakan coba kembali.');
     } finally {
       setLoading(false);
     }
@@ -174,8 +203,12 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
         {/* Modal Header */}
         <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-800">Unggah Perangkat Pembelajaran</h3>
-            <p className="text-xs text-slate-500">Tambahkan modul, prota, atau promes baru</p>
+            <h3 className="text-base font-bold text-slate-800">
+              {isEdit ? 'Edit Perangkat Pembelajaran' : 'Unggah Perangkat Pembelajaran'}
+            </h3>
+            <p className="text-xs text-slate-500">
+              {isEdit ? 'Ubah judul, mata pelajaran, jenis, atau file perangkat' : 'Tambahkan modul, prota, atau promes baru'}
+            </p>
           </div>
           <button 
             onClick={onClose}
@@ -200,7 +233,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
           {success && (
             <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-700 text-xs">
               <CheckCircle className="w-4 h-4 shrink-0" />
-              <span>Perangkat pembelajaran berhasil diunggah!</span>
+              <span>{isEdit ? 'Perangkat pembelajaran berhasil diperbarui!' : 'Perangkat pembelajaran berhasil diunggah!'}</span>
             </div>
           )}
 
@@ -307,7 +340,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
           {/* File Upload Zone */}
           <div>
             <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-              Berkas Perangkat (Format PDF)
+              Berkas Perangkat (Format PDF) {isEdit && <span className="text-[10px] text-slate-400 font-normal">(Opsional - biarkan kosong jika tidak ingin mengubah file)</span>}
             </label>
             
             <div
@@ -351,7 +384,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                     disabled={loading || success}
                     className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase tracking-wider underline cursor-pointer"
                   >
-                    Ganti Berkas
+                    Ganti Berkas Terpilih
                   </button>
                 </div>
               ) : (
@@ -360,7 +393,9 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                     <Upload className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-700">Tarik & lepas file Anda di sini, atau klik untuk mencari</p>
+                    <p className="text-xs font-semibold text-slate-700">
+                      {isEdit ? 'Klik untuk memilih file PDF baru (Opsional)' : 'Tarik & lepas file Anda di sini, atau klik untuk mencari'}
+                    </p>
                     <p className="text-[10px] text-slate-400 mt-1">Hanya menerima format PDF (maks. 10MB)</p>
                   </div>
                 </div>
@@ -386,10 +421,10 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
               {loading ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Mengunggah...</span>
+                  <span>{isEdit ? 'Menyimpan...' : 'Mengunggah...'}</span>
                 </>
               ) : (
-                <span>Simpan Perangkat</span>
+                <span>{isEdit ? 'Simpan Perubahan' : 'Simpan Perangkat'}</span>
               )}
             </button>
           </div>

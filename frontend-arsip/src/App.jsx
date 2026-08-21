@@ -20,6 +20,7 @@ function ProtectedRoute({ children }) {
 export default function App() {
   const [user, setUser] = useState(authService.getUser());
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [editModulData, setEditModulData] = useState(null);
   const [selectedReviewDoc, setSelectedReviewDoc] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -52,6 +53,16 @@ export default function App() {
     setSelectedReviewDoc(doc);
   };
 
+  const handleOpenEdit = (doc) => {
+    setEditModulData(doc);
+    setIsUploadOpen(true);
+  };
+
+  const handleOpenNewUpload = () => {
+    setEditModulData(null);
+    setIsUploadOpen(true);
+  };
+
   return (
     <Router>
       <Routes>
@@ -76,12 +87,13 @@ export default function App() {
               <Layout 
                 role={role} 
                 user={user}
-                onUploadClick={() => setIsUploadOpen(true)}
+                onUploadClick={handleOpenNewUpload}
                 onLogout={handleLogout}
               >
                 <DashboardGuru 
                   user={user}
-                  onOpenUpload={() => setIsUploadOpen(true)} 
+                  onOpenUpload={handleOpenNewUpload} 
+                  onOpenEdit={handleOpenEdit}
                   refreshTrigger={refreshTrigger}
                   onOpenReview={handleOpenReview}
                 />
@@ -98,12 +110,13 @@ export default function App() {
               <Layout 
                 role={role} 
                 user={user}
-                onUploadClick={() => setIsUploadOpen(true)}
+                onUploadClick={handleOpenNewUpload}
                 onLogout={handleLogout}
               >
                 <DashboardAdmin 
                   refreshTrigger={refreshTrigger}
                   onOpenReview={handleOpenReview}
+                  onOpenEdit={handleOpenEdit}
                 />
               </Layout>
             </ProtectedRoute>
@@ -121,10 +134,14 @@ export default function App() {
         />
       </Routes>
 
-      {/* Upload Modal (Guru) */}
+      {/* Upload & Edit Modal */}
       <UploadModal 
         isOpen={isUploadOpen} 
-        onClose={() => setIsUploadOpen(false)} 
+        editData={editModulData}
+        onClose={() => {
+          setIsUploadOpen(false);
+          setEditModulData(null);
+        }} 
         onUploadSuccess={triggerRefresh}
       />
 

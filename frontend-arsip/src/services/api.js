@@ -111,6 +111,16 @@ export const modulService = {
     return response.data;
   },
 
+  // Update a module
+  updateModul: async (id, formData) => {
+    const response = await API.post(`/moduls/${id}/update`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
   // Review module (Admin action)
   reviewModul: async (id, status, catatanRevisi) => {
     const response = await API.post(`/moduls/${id}/review`, {

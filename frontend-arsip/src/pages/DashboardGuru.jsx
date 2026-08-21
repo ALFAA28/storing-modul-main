@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { FileText, Plus, Search, Filter, HelpCircle, Eye, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { FileText, Plus, Search, Filter, HelpCircle, Eye, AlertCircle, CheckCircle, Clock, Edit3, Trash2 } from 'lucide-react';
 import { modulService } from '../services/api';
 
-export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOpenReview }) {
+export default function DashboardGuru({ user, onOpenUpload, onOpenEdit, refreshTrigger, onOpenReview }) {
   const [searchParams] = useSearchParams();
   const isListTab = searchParams.get('tab') === 'list';
 
@@ -12,6 +12,9 @@ export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOp
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJenis, setSelectedJenis] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Load modules
   const loadModuls = async () => {
@@ -29,6 +32,20 @@ export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOp
   useEffect(() => {
     loadModuls();
   }, [refreshTrigger]);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await modulService.deleteModul(deleteTarget.id);
+      setDeleteTarget(null);
+      loadModuls();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal menghapus modul.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // Statistics calculation
   const stats = {
@@ -281,15 +298,31 @@ export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOp
                       </span>
                     </td>
 
-                    {/* Action Link */}
+                    {/* Action Links: Preview, Edit, Delete */}
                     <td className="py-4 px-6 text-right">
-                      <button
-                        onClick={() => onOpenReview(modul)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-650 hover:text-slate-800 rounded-lg text-[10px] font-bold transition-all duration-200 cursor-pointer"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Preview</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => onOpenReview(modul)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Preview</span>
+                        </button>
+                        <button
+                          onClick={() => onOpenEdit && onOpenEdit(modul)}
+                          title="Edit Perangkat"
+                          className="p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-bold transition-all cursor-pointer border border-indigo-200"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(modul)}
+                          title="Hapus Perangkat"
+                          className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[10px] font-bold transition-all cursor-pointer border border-rose-200"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -299,6 +332,45 @@ export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOp
         </div>
 
       </div>
+
+      {/* Modal Konfirmasi Hapus Guru */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className="text-base font-bold text-slate-800">Hapus Perangkat Pembelajaran?</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Apakah Anda yakin ingin menghapus perangkat <strong>"{deleteTarget.judul}"</strong>?
+              </p>
+              <p className="text-[11px] text-rose-600 font-bold pt-1">
+                Tindakan ini tidak dapat dibatalkan.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-600/20 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? 'Menghapus...' : 'Ya, Hapus Data'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

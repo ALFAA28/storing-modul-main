@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { FileText, Search, ShieldAlert, CheckCircle, Clock, Eye, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { FileText, Search, ShieldAlert, CheckCircle, Clock, Eye, AlertCircle, RefreshCw, Trash2, Edit3 } from 'lucide-react';
 import { modulService } from '../services/api';
 
-export default function DashboardAdmin({ refreshTrigger, onOpenReview }) {
+export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdit }) {
   const [searchParams] = useSearchParams();
   const isMasterTab = searchParams.get('tab') === 'master';
 
@@ -327,6 +327,13 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview }) {
                             <span>Preview</span>
                           </button>
                         )}
+                        <button
+                          onClick={() => onOpenEdit && onOpenEdit(modul)}
+                          title="Edit Perangkat"
+                          className="p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 hover:text-indigo-700 rounded-lg text-[10px] font-bold transition-all duration-200 cursor-pointer border border-indigo-200"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => setDeleteTarget(modul)}
                           title="Hapus Perangkat"

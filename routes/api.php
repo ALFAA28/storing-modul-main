@@ -30,6 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // API Modul
     Route::get('/moduls', [ModulController::class, 'index']);
     Route::post('/moduls', [ModulController::class, 'store']);
+    Route::put('/moduls/{id}', [ModulController::class, 'update']);
+    Route::post('/moduls/{id}/update', [ModulController::class, 'update']);
     Route::delete('/moduls/{id}', [ModulController::class, 'destroy']);
     Route::post('/moduls/{id}/delete', [ModulController::class, 'destroy']);
     Route::post('/moduls/{id}/review', [ModulController::class, 'review']);
