@@ -56,15 +56,12 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // 5. Sync user to local database (create or update)
-        $localUser = User::updateOrCreate(
-            ['email' => $request->email],
-            [
-                'name' => $absensiUser['name'] ?? 'User',
-                'role' => $modulRole,
-                'password' => bcrypt($request->password), // keep a local copy for fallback
-            ]
-        );
+        // 5. Fetch local user (since DB is shared, they already exist)
+        $localUser = User::where('email', $request->email)->first();
+
+        if (!$localUser) {
+            return response()->json(['message' => 'User tidak ditemukan di database lokal.'], 404);
+        }
 
         // 6. Create local Sanctum token
         $token = $localUser->createToken('auth_token')->plainTextToken;
@@ -123,15 +120,12 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // 5. Sync user to local database (create or update)
-        $localUser = User::updateOrCreate(
-            ['email' => $absensiUser['email']],
-            [
-                'name' => $absensiUser['name'] ?? 'User',
-                'role' => $modulRole,
-                'password' => bcrypt(uniqid()), // random password since we only use SSO
-            ]
-        );
+        // 5. Fetch local user (since DB is shared, they already exist)
+        $localUser = User::where('email', $absensiUser['email'])->first();
+
+        if (!$localUser) {
+            return response()->json(['message' => 'User tidak ditemukan di database lokal.'], 404);
+        }
 
         // 6. Create local Sanctum token
         $token = $localUser->createToken('auth_token')->plainTextToken;
