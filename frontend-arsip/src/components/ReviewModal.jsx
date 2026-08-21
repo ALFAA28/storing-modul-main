@@ -102,15 +102,6 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
                 Penampil Berkas PDF
               </span>
               <div className="flex items-center gap-2">
-                {isCloudinaryImage && (
-                  <button
-                    type="button"
-                    onClick={() => setViewMode(viewMode === 'auto' ? 'native' : 'auto')}
-                    className="text-[10px] font-semibold text-slate-400 hover:text-white transition-colors underline cursor-pointer"
-                  >
-                    {viewMode === 'auto' ? 'Mode PDF Native' : 'Mode Gambar Halaman'}
-                  </button>
-                )}
                 <a 
                   href={pdfUrl}
                   target="_blank"
