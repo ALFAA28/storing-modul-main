@@ -126,6 +126,7 @@ class ModulController extends Controller
 
         if ($request->hasFile('file_pdf')) {
             $file = $request->file('file_pdf');
+            $oldFilePath = $modul->file_pdf_path;
             $cloudinaryUrl = env('CLOUDINARY_URL');
 
             if ($cloudinaryUrl) {
@@ -146,11 +147,14 @@ class ModulController extends Controller
                 ]);
 
                 if ($response->successful()) {
+                    // Hapus file lama di Cloudinary jika upload file baru sukses
+                    $this->deleteFile($oldFilePath);
                     $modul->file_pdf_path = $response->json('secure_url');
                 } else {
                     return response()->json(['message' => 'Gagal upload file ke Cloudinary.'], 500);
                 }
             } else {
+                $this->deleteFile($oldFilePath);
                 $modul->file_pdf_path = $file->store('arsip_dokumen', 'public');
             }
         }
@@ -184,11 +188,81 @@ class ModulController extends Controller
             return response()->json(['message' => 'Anda tidak memiliki izin untuk menghapus perangkat milik pengguna lain.'], 403);
         }
 
+        // Hapus file fisik di Cloudinary / local storage
+        $this->deleteFile($modul->file_pdf_path);
+
         $modul->catatanRevisis()->delete();
         $modul->delete();
 
         return response()->json([
             'message' => 'Data perangkat pembelajaran berhasil dihapus!'
         ], 200);
+    }
+
+    /**
+     * Helper untuk menghapus file fisik di Cloudinary maupun local storage
+     */
+    private function deleteFile(?string $filePath): void
+    {
+        if (empty($filePath)) {
+            return;
+        }
+
+        if (str_contains($filePath, 'res.cloudinary.com')) {
+            $this->deleteCloudinaryFile($filePath);
+        } elseif (str_starts_with($filePath, 'arsip_dokumen/') || str_contains($filePath, 'storage/arsip_dokumen/')) {
+            $cleanPath = str_replace(['storage/', '/storage/'], '', $filePath);
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($cleanPath);
+        }
+    }
+
+    /**
+     * Helper untuk menghapus aset di Cloudinary via Destroy REST API
+     */
+    private function deleteCloudinaryFile(string $fileUrl): void
+    {
+        $cloudinaryUrl = env('CLOUDINARY_URL');
+        if (!$cloudinaryUrl) {
+            return;
+        }
+
+        try {
+            $parsed = parse_url($cloudinaryUrl);
+            $apiKey = $parsed['user'] ?? '';
+            $apiSecret = $parsed['pass'] ?? '';
+            $cloudName = $parsed['host'] ?? '';
+
+            if (!$apiKey || !$apiSecret || !$cloudName) {
+                return;
+            }
+
+            // Extract resource_type and file path from URL
+            if (preg_match('#/(image|raw|video)/upload/(?:v\d+/)?(.+)$#', $fileUrl, $matches)) {
+                $resourceType = $matches[1];
+                $fullPath = $matches[2];
+
+                $filenameWithoutExt = pathinfo($fullPath, PATHINFO_FILENAME);
+
+                // Candidates for public_id to destroy
+                $publicIds = array_unique([$fullPath, $filenameWithoutExt]);
+                $typesToTry = array_unique([$resourceType, 'raw', 'image']);
+
+                foreach ($typesToTry as $type) {
+                    foreach ($publicIds as $pubId) {
+                        $timestamp = time();
+                        $signature = sha1("public_id={$pubId}&timestamp={$timestamp}{$apiSecret}");
+
+                        \Illuminate\Support\Facades\Http::asForm()->post("https://api.cloudinary.com/v1_1/{$cloudName}/{$type}/destroy", [
+                            'public_id' => $pubId,
+                            'api_key' => $apiKey,
+                            'timestamp' => $timestamp,
+                            'signature' => $signature,
+                        ]);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Gagal menghapus file Cloudinary: ' . $e->getMessage());
+        }
     }
 }
