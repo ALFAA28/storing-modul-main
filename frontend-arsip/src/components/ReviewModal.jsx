@@ -51,7 +51,13 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
   };
 
   const pdfUrl = doc.file_path || '';
-  const [useGoogleViewer, setUseGoogleViewer] = useState(false);
+  const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState('auto'); // 'auto' | 'google' | 'native'
+
+  const isCloudinaryImage = pdfUrl.includes('res.cloudinary.com') && pdfUrl.includes('/image/upload/');
+  const cloudPageImageUrl = isCloudinaryImage 
+    ? pdfUrl.replace('/image/upload/', `/image/upload/pg_${page}/`).replace(/\.pdf$/i, '.jpg')
+    : null;
 
   const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
   const directPdfUrl = `${pdfUrl}#toolbar=1&navpanes=0`;
@@ -95,14 +101,16 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
                 <FileText className="w-3.5 h-3.5 text-indigo-400" />
                 Penampil Berkas PDF
               </span>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setUseGoogleViewer(!useGoogleViewer)}
-                  className="text-[10px] font-semibold text-slate-400 hover:text-white transition-colors underline cursor-pointer"
-                >
-                  {useGoogleViewer ? 'Ganti ke Native Viewer' : 'Ganti ke Google Viewer'}
-                </button>
+              <div className="flex items-center gap-2">
+                {isCloudinaryImage && (
+                  <button
+                    type="button"
+                    onClick={() => setViewMode(viewMode === 'auto' ? 'native' : 'auto')}
+                    className="text-[10px] font-semibold text-slate-400 hover:text-white transition-colors underline cursor-pointer"
+                  >
+                    {viewMode === 'auto' ? 'Mode PDF Native' : 'Mode Gambar Halaman'}
+                  </button>
+                )}
                 <a 
                   href={pdfUrl}
                   target="_blank"
@@ -115,10 +123,43 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
               </div>
             </div>
 
-            {/* Embedded PDF iframe / object */}
-            <div className="flex-1 bg-slate-800 flex items-center justify-center relative overflow-hidden">
+            {/* Embedded PDF / Image Viewer */}
+            <div className="flex-1 bg-slate-800 flex flex-col items-center justify-center relative overflow-hidden p-2">
               {pdfUrl ? (
-                useGoogleViewer ? (
+                isCloudinaryImage && viewMode === 'auto' ? (
+                  <div className="w-full h-full flex flex-col items-center justify-between overflow-auto p-3 space-y-2">
+                    <div className="flex-1 flex items-center justify-center w-full min-h-0">
+                      <img
+                        src={cloudPageImageUrl}
+                        alt={`Pratinjau Dokumen Halaman ${page}`}
+                        onError={() => {
+                          if (page > 1) setPage(1);
+                        }}
+                        className="max-h-full max-w-full object-contain rounded-lg shadow-2xl border border-slate-700 bg-white"
+                      />
+                    </div>
+                    <div className="flex items-center gap-4 bg-slate-900/90 border border-slate-700 px-4 py-1 rounded-full shrink-0 shadow-lg">
+                      <button
+                        type="button"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page <= 1}
+                        className="text-xs font-bold text-slate-300 hover:text-white disabled:opacity-30 cursor-pointer px-2 py-0.5"
+                      >
+                        ◀ Prev
+                      </button>
+                      <span className="text-xs font-bold text-indigo-400">
+                        Halaman {page}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPage(p => p + 1)}
+                        className="text-xs font-bold text-slate-300 hover:text-white cursor-pointer px-2 py-0.5"
+                      >
+                        Next ▶
+                      </button>
+                    </div>
+                  </div>
+                ) : viewMode === 'google' ? (
                   <iframe
                     src={googleViewerUrl}
                     title="Preview PDF via Google Viewer"

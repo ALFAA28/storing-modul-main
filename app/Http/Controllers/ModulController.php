@@ -72,7 +72,7 @@ class ModulController extends Controller
 
             $response = \Illuminate\Support\Facades\Http::attach(
                 'file', file_get_contents($file->getRealPath()), $file->getClientOriginalName()
-            )->post('https://api.cloudinary.com/v1_1/' . $cloudName . '/auto/upload', [
+            )->post('https://api.cloudinary.com/v1_1/' . $cloudName . '/raw/upload', [
                 'api_key' => $apiKey,
                 'timestamp' => $timestamp,
                 'signature' => $signature
@@ -139,7 +139,7 @@ class ModulController extends Controller
 
                 $response = \Illuminate\Support\Facades\Http::attach(
                     'file', file_get_contents($file->getRealPath()), $file->getClientOriginalName()
-                )->post('https://api.cloudinary.com/v1_1/' . $cloudName . '/auto/upload', [
+                )->post('https://api.cloudinary.com/v1_1/' . $cloudName . '/raw/upload', [
                     'api_key' => $apiKey,
                     'timestamp' => $timestamp,
                     'signature' => $signature
