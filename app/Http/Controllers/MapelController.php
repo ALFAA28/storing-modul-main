@@ -12,15 +12,10 @@ class MapelController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return response()->json([
+            'message' => 'Berhasil mengambil daftar mapel',
+            'data' => Mapel::orderBy('nama_mapel', 'asc')->get()
+        ], 200);
     }
 
     /**
@@ -28,38 +23,32 @@ class MapelController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $request->validate([
+            'nama_mapel' => 'required|string|max:255',
+            'tingkat_kelas' => 'required|string|max:50',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Mapel $mapel)
-    {
-        //
-    }
+        $mapel = Mapel::create([
+            'nama_mapel' => $request->nama_mapel,
+            'tingkat_kelas' => $request->tingkat_kelas,
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Mapel $mapel)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Mapel $mapel)
-    {
-        //
+        return response()->json([
+            'message' => 'Mata pelajaran berhasil ditambahkan!',
+            'data' => $mapel
+        ], 201);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Mapel $mapel)
+    public function destroy($id)
     {
-        //
+        $mapel = Mapel::findOrFail($id);
+        $mapel->delete();
+
+        return response()->json([
+            'message' => 'Mata pelajaran berhasil dihapus!'
+        ], 200);
     }
 }

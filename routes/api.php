@@ -33,9 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/moduls/{id}/review', [ModulController::class, 'review']);
 
     // API Mapel
-    Route::get('/mapels', function () {
-        return response()->json([
-            'data' => \App\Models\Mapel::all()
-        ]);
-    });
+    Route::get('/mapels', [\App\Http\Controllers\MapelController::class, 'index']);
+    Route::post('/mapels', [\App\Http\Controllers\MapelController::class, 'store']);
+    Route::delete('/mapels/{id}', [\App\Http\Controllers\MapelController::class, 'destroy']);
 });

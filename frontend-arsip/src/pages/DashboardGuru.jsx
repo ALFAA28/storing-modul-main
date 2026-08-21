@@ -76,7 +76,7 @@ export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOp
             </div>
             <button
               onClick={onOpenUpload}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-650 hover:bg-indigo-750 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/25 transition-all duration-200 cursor-pointer self-start sm:self-center"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all duration-200 cursor-pointer self-start sm:self-center"
             >
               <Plus className="w-4 h-4" />
               <span>Unggah Perangkat Baru</span>
@@ -92,7 +92,7 @@ export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOp
                 <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Total Perangkat</p>
                 <h3 className="text-2xl font-extrabold text-slate-800 mt-1">{stats.total}</h3>
               </div>
-              <div className="p-3 bg-indigo-50 text-indigo-650 rounded-xl">
+              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
                 <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOp
         <div className="overflow-x-auto">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center space-y-3">
-              <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-650 rounded-full animate-spin"></div>
+              <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
               <p className="text-slate-450 text-xs">Memuat data dokumen...</p>
             </div>
           ) : filteredModuls.length === 0 ? (
@@ -223,7 +223,7 @@ export default function DashboardGuru({ user, onOpenUpload, refreshTrigger, onOp
                     {/* Judul & Detail */}
                     <td className="py-4 px-6 font-semibold text-slate-800 max-w-xs md:max-w-md">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-indigo-50 text-indigo-650 rounded-lg shrink-0">
+                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
                           <FileText className="w-4 h-4" />
                         </div>
                         <div className="overflow-hidden">

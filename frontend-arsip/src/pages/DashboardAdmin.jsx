@@ -93,7 +93,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview }) {
                 <p className="text-[10px] sm:text-xs font-bold text-slate-450 uppercase tracking-wider">Total Masuk</p>
                 <h3 className="text-2xl font-extrabold text-slate-800 mt-1">{stats.total}</h3>
               </div>
-              <div className="p-3 bg-indigo-50 text-indigo-650 rounded-xl">
+              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
                 <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview }) {
         <div className="overflow-x-auto">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center space-y-3">
-              <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-650 rounded-full animate-spin"></div>
+              <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
               <p className="text-slate-450 text-xs">Memuat seluruh modul...</p>
             </div>
           ) : filteredModuls.length === 0 ? (
@@ -295,7 +295,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview }) {
                       {modul.status === 'Pending' ? (
                         <button
                           onClick={() => onOpenReview(modul)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-650 hover:bg-indigo-750 text-white rounded-lg text-[10px] font-extrabold transition-all duration-200 cursor-pointer shadow-sm shadow-indigo-600/10 hover:shadow-indigo-600/25"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-extrabold transition-all duration-200 cursor-pointer shadow-sm shadow-indigo-600/15 hover:shadow-indigo-600/30"
                         >
                           <ShieldAlert className="w-3.5 h-3.5" />
                           <span>Review</span>

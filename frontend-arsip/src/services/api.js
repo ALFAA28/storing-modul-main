@@ -128,5 +128,13 @@ export const mapelService = {
   getAllMapels: async () => {
     const response = await API.get('/mapels');
     return response.data;
+  },
+  createMapel: async (data) => {
+    const response = await API.post('/mapels', data);
+    return response.data;
+  },
+  deleteMapel: async (id) => {
+    const response = await API.delete(`/mapels/${id}`);
+    return response.data;
   }
 };
