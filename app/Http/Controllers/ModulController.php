@@ -12,7 +12,7 @@ class ModulController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role === 'guru') {
+        if (in_array($user->role, ['guru', 'guru_mapel', 'wali_kelas'])) {
             $moduls = Modul::with(['user', 'mapelRelation', 'catatanRevisis'])->where('user_id', $user->id)->get();
         } else {
             $moduls = Modul::with(['user', 'mapelRelation', 'catatanRevisis'])->get();

@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { BookOpen, LayoutDashboard, FileText, UploadCloud, Users } from 'lucide-react';
 
 export default function Sidebar({ role, user, onUploadClick }) {
-  const isGuru = role === 'guru';
+  const isGuru = role !== 'admin' && role !== 'pengawas';
   
   const menuItems = isGuru 
     ? [

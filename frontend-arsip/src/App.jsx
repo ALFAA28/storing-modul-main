@@ -23,7 +23,8 @@ export default function App() {
   const [selectedReviewDoc, setSelectedReviewDoc] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const role = user?.role || 'guru';
+  const rawRole = user?.role || 'guru';
+  const role = (rawRole === 'admin' || rawRole === 'pengawas') ? 'admin' : 'guru';
 
   // Listen for storage changes (e.g. after login)
   useEffect(() => {
