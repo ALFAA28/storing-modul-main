@@ -1,0 +1,25 @@
+{
+  "short_name": "Absensi SMK NU Donomulyo",
+  "name": "Absensi SMK NU Donomulyo",
+  "icons": [
+    {
+      "src": "IMG_03611.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "IMG_03611.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "IMG_03611.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
