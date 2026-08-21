@@ -128,10 +128,11 @@ export default function App() {
         onUploadSuccess={triggerRefresh}
       />
 
-      {/* PDF Review Modal (Admin/Supervisor) */}
+      {/* PDF Review Modal (Admin/Supervisor & Guru View) */}
       <ReviewModal 
         isOpen={!!selectedReviewDoc} 
         document={selectedReviewDoc} 
+        role={role}
         onClose={() => setSelectedReviewDoc(null)} 
         onReviewSuccess={triggerRefresh}
       />

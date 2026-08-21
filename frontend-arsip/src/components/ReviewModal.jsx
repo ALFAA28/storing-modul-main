@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, CheckCircle, AlertTriangle, MessageSquare, ExternalLink } from 'lucide-react';
+import { X, FileText, CheckCircle, AlertTriangle, MessageSquare, ExternalLink, Download, Clock } from 'lucide-react';
 import { modulService } from '../services/api';
 
-export default function ReviewModal({ isOpen, document: doc, onClose, onReviewSuccess }) {
+export default function ReviewModal({ isOpen, document: doc, role, onClose, onReviewSuccess }) {
   if (!isOpen || !doc) return null;
+
+  const isAdmin = role === 'admin' || role === 'pengawas';
 
   const [catatan, setCatatan] = useState('');
   const [loading, setLoading] = useState(false);
@@ -11,10 +13,10 @@ export default function ReviewModal({ isOpen, document: doc, onClose, onReviewSu
   const [success, setSuccess] = useState(false);
   const [successStatus, setSuccessStatus] = useState('');
 
-  // Sync initial state if document already has notes
+  // Sync initial state if document changes
   useEffect(() => {
     if (doc) {
-      setCatatan(doc.catatan_revisi || '');
+      setCatatan('');
       setError('');
       setSuccess(false);
     }
@@ -37,7 +39,7 @@ export default function ReviewModal({ isOpen, document: doc, onClose, onReviewSu
       
       setTimeout(() => {
         setSuccess(false);
-        onReviewSuccess();
+        if (onReviewSuccess) onReviewSuccess();
         onClose();
       }, 1500);
 
@@ -48,11 +50,18 @@ export default function ReviewModal({ isOpen, document: doc, onClose, onReviewSu
     }
   };
 
+  const pdfUrl = doc.file_path || '';
+  const isCloudUrl = pdfUrl.startsWith('http');
+  // Use Google Docs Viewer for reliable cross-origin cloud PDF rendering
+  const viewerUrl = isCloudUrl 
+    ? `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true` 
+    : `${pdfUrl}#toolbar=0&navpanes=0`;
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-0 md:p-6 transition-all duration-300">
       
       {/* Container */}
-      <div className="bg-white w-full h-full md:h-[90vh] md:max-w-7xl md:rounded-2xl shadow-premium border border-slate-200 flex flex-col overflow-hidden animate-all-custom">
+      <div className="bg-white w-full h-full md:h-[90vh] md:max-w-7xl md:rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
         
         {/* Modal Header */}
         <div className="h-16 px-6 border-b border-slate-200/80 bg-white flex items-center justify-between shrink-0">
@@ -63,13 +72,13 @@ export default function ReviewModal({ isOpen, document: doc, onClose, onReviewSu
             <div className="overflow-hidden max-w-lg md:max-w-xl pr-4">
               <h3 className="text-sm font-bold text-slate-800 truncate">{doc.judul}</h3>
               <p className="text-[11px] text-slate-500 font-medium truncate">
-                Diajukan oleh: <span className="font-bold text-slate-700">{doc.user?.name || 'Guru'}</span> &bull; Mapel: <span className="font-bold text-slate-700">{doc.mapel}</span> &bull; Jenis: <span className="font-bold text-slate-700">{doc.jenis}</span>
+                Diajukan oleh: <span className="font-bold text-slate-700">{doc.user?.name || 'Guru'}</span> &bull; Mapel: <span className="font-bold text-slate-700">{doc.mapel || '-'}</span> &bull; Jenis: <span className="font-bold text-slate-700">{doc.jenis}</span>
               </p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-650 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -79,42 +88,54 @@ export default function ReviewModal({ isOpen, document: doc, onClose, onReviewSu
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-slate-50">
           
           {/* Left Side: PDF Viewer Pane */}
-          <div className="flex-1 h-[45vh] md:h-full border-r border-slate-200 flex flex-col bg-slate-800 relative">
+          <div className="flex-1 h-[45vh] md:h-full border-r border-slate-200 flex flex-col bg-slate-900 relative">
             
             {/* Action Bar inside PDF Pane */}
-            <div className="h-10 bg-slate-900/90 flex items-center justify-between px-4 shrink-0">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Penampil PDF
+            <div className="h-10 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 shrink-0">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                Penampil Berkas PDF
               </span>
-              <a 
-                href={doc.file_path}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
-              >
-                <span>Buka Tab Baru</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              <div className="flex items-center gap-3">
+                <a 
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                >
+                  <span>Buka Tab Baru</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             </div>
 
             {/* Embedded PDF iframe */}
-            <div className="flex-1 bg-slate-700 flex items-center justify-center">
-              <iframe
-                src={`${doc.file_path}#toolbar=0&navpanes=0`}
-                title="Preview PDF"
-                className="w-full h-full border-none bg-slate-750"
-                loading="lazy"
-              />
+            <div className="flex-1 bg-slate-800 flex items-center justify-center relative">
+              {pdfUrl ? (
+                <iframe
+                  src={viewerUrl}
+                  title="Preview PDF"
+                  className="w-full h-full border-none bg-white"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="text-center p-6 text-slate-400">
+                  <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Berkas PDF tidak ditemukan.</p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Right Side: Revision Notes & Action Buttons Pane */}
-          <div className="w-full md:w-96 lg:w-[400px] h-[45vh] md:h-full bg-white flex flex-col shrink-0">
+          {/* Right Side: Notes & Action Buttons Pane */}
+          <div className="w-full md:w-96 lg:w-[420px] h-[45vh] md:h-full bg-white flex flex-col shrink-0">
             
             {/* Header Form */}
-            <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center gap-2 shrink-0">
-              <MessageSquare className="w-4 h-4 text-indigo-650" />
-              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Panel Penilaian</h4>
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2 shrink-0">
+              <MessageSquare className="w-4 h-4 text-indigo-600" />
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                {isAdmin ? 'Panel Penilaian & Review' : 'Status & Catatan Pengawas'}
+              </h4>
             </div>
 
             {/* Form Scroll Area */}
@@ -134,8 +155,8 @@ export default function ReviewModal({ isOpen, document: doc, onClose, onReviewSu
                   )}
                   <div className="text-sm font-semibold">
                     {successStatus === 'ACC' 
-                      ? 'Dokumen BERHASIL di-ACC!' 
-                      : 'Catatan Revisi dikirim!'}
+                      ? 'Dokumen BERHASIL disetujui (ACC)!' 
+                      : 'Catatan Revisi berhasil dikirim!'}
                   </div>
                 </div>
               )}
@@ -149,67 +170,121 @@ export default function ReviewModal({ isOpen, document: doc, onClose, onReviewSu
               )}
 
               {/* Info status saat ini */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/50 space-y-2.5">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/60 space-y-2.5">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Status Saat Ini:
+                  Status Dokumen:
                 </span>
                 <div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
                     doc.status === 'ACC'
-                      ? 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                       : doc.status === 'Revisi'
-                      ? 'bg-rose-100 text-rose-850'
-                      : 'bg-amber-100 text-amber-850'
+                      ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                      : 'bg-amber-100 text-amber-800 border border-amber-200'
                   }`}>
-                    {doc.status}
+                    {doc.status === 'ACC' && <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />}
+                    {doc.status === 'Revisi' && <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />}
+                    {doc.status === 'Pending' && <Clock className="w-3.5 h-3.5 text-amber-600" />}
+                    <span>{doc.status === 'Pending' ? 'Menunggu Penilaian' : doc.status}</span>
                   </span>
                 </div>
-                {doc.catatan_revisi && (
-                  <div className="pt-2 border-t border-slate-200/60">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Catatan Sebelumnya:</p>
-                    <p className="text-xs text-slate-600 italic">"{doc.catatan_revisi}"</p>
+              </div>
+
+              {/* Riwayat Catatan Revisi / Umpan Balik */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  Catatan dari Pengawas / Admin
+                </label>
+                
+                {doc.catatan_revisis && doc.catatan_revisis.length > 0 ? (
+                  <div className="space-y-2">
+                    {doc.catatan_revisis.map((cr, idx) => (
+                      <div key={idx} className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-1">
+                        <p className="text-xs text-slate-700 leading-relaxed font-medium">"{cr.catatan}"</p>
+                        <p className="text-[10px] text-amber-800 font-semibold">
+                          {cr.created_at ? new Date(cr.created_at).toLocaleString('id-ID') : '-'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : doc.catatan_revisi ? (
+                  <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-1">
+                    <p className="text-xs text-slate-700 leading-relaxed font-medium">"{doc.catatan_revisi}"</p>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center text-slate-400 text-xs">
+                    Belum ada catatan dari pengawas. Dokumen sedang ditinjau.
                   </div>
                 )}
               </div>
 
-              {/* Textarea Catatan Revisi */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Catatan Revisi / Umpan Balik
-                </label>
-                <textarea
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
-                  placeholder="Ketik catatan revisi secara rinci jika dokumen ditolak, atau berikan apresiasi jika dokumen disetujui..."
-                  disabled={loading || success}
-                  rows={6}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-250 bg-slate-50/50 text-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all resize-none"
-                />
-                <p className="text-[10px] text-slate-450">
-                  *Catatan revisi wajib diisi jika Anda memilih "Kirim Revisi".
-                </p>
-              </div>
+              {/* Admin ONLY: Input Catatan Baru */}
+              {isAdmin && (
+                <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    Beri Catatan / Masukan Baru
+                  </label>
+                  <textarea
+                    value={catatan}
+                    onChange={(e) => setCatatan(e.target.value)}
+                    placeholder="Ketik catatan revisi jika ditolak, atau masukan/apresiasi jika disetujui..."
+                    disabled={loading || success}
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 text-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all resize-none"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    *Catatan wajib diisi apabila Anda memilih "Tolak & Revisi".
+                  </p>
+                </div>
+              )}
 
             </div>
 
             {/* Action Bar Footer */}
-            <div className="p-6 border-t border-slate-200/80 bg-slate-50/40 grid grid-cols-2 gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => handleAction('Revisi')}
-                disabled={loading || success}
-                className="w-full py-2.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-250 cursor-pointer flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
-              >
-                <span>Tolak & Revisi</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAction('ACC')}
-                disabled={loading || success}
-                className="w-full py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-750 text-white shadow-md shadow-emerald-600/10 hover:shadow-emerald-600/20 cursor-pointer flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
-              >
-                <span>Approve / ACC</span>
-              </button>
+            <div className="p-6 border-t border-slate-200 bg-slate-50 shrink-0">
+              {isAdmin ? (
+                /* ADMIN / PENGAWAS ACTIONS */
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleAction('Revisi')}
+                    disabled={loading || success}
+                    className="w-full py-2.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 cursor-pointer flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Tolak & Revisi</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAction('ACC')}
+                    disabled={loading || success}
+                    className="w-full py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 hover:shadow-emerald-600/30 cursor-pointer flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Approve / ACC</span>
+                  </button>
+                </div>
+              ) : (
+                /* GURU ONLY ACTIONS */
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 cursor-pointer text-center transition-colors"
+                  >
+                    Tutup
+                  </button>
+                  <a
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20 cursor-pointer text-center transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh / Buka File</span>
+                  </a>
+                </div>
+              )}
             </div>
 
           </div>
