@@ -62,6 +62,10 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
   const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
   const directPdfUrl = `${pdfUrl}#toolbar=1&navpanes=0`;
 
+  const openInNewTabUrl = (pdfUrl.includes('res.cloudinary.com') && pdfUrl.includes('/image/upload/'))
+    ? pdfUrl.replace('/image/upload/', `/image/upload/pg_${page}/`).replace(/\.pdf$/i, '.jpg')
+    : pdfUrl;
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-0 md:p-6 transition-all duration-300">
       
@@ -103,7 +107,7 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
               </span>
               <div className="flex items-center gap-2">
                 <a 
-                  href={pdfUrl}
+                  href={openInNewTabUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-800/50"
