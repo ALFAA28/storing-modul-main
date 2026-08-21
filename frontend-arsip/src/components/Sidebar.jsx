@@ -85,6 +85,11 @@ export default function Sidebar({ role, user, onUploadClick }) {
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate">
               {role === 'admin' ? 'Admin / Pengawas' : 'Guru'}
             </p>
+            {user?.nrg && (
+              <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                NRG: {user.nrg}
+              </p>
+            )}
           </div>
         </div>
       </div>

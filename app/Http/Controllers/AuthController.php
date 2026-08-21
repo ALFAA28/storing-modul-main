@@ -75,6 +75,7 @@ class AuthController extends Controller
                 'name' => $localUser->name,
                 'email' => $localUser->email,
                 'role' => $localUser->role,
+                'nrg' => $localUser->nrg,
             ]
         ], 200);
     }
@@ -139,6 +140,7 @@ class AuthController extends Controller
                 'name' => $localUser->name,
                 'email' => $localUser->email,
                 'role' => $localUser->role,
+                'nrg' => $localUser->nrg,
             ]
         ], 200);
     }

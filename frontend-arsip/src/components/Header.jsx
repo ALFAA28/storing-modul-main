@@ -57,6 +57,11 @@ export default function Header({ role, user, toggleSidebar, onLogout }) {
               <p className="text-[9px] font-bold text-indigo-600 tracking-wider uppercase leading-none mt-0.5">
                 {role === 'admin' ? 'Admin / Pengawas' : 'Guru'}
               </p>
+              {user?.nrg && (
+                <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
+                  NRG: {user.nrg}
+                </p>
+              )}
             </div>
           </div>
 
