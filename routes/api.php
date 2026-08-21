@@ -31,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/moduls', [ModulController::class, 'index']);
     Route::post('/moduls', [ModulController::class, 'store']);
     Route::delete('/moduls/{id}', [ModulController::class, 'destroy']);
+    Route::post('/moduls/{id}/delete', [ModulController::class, 'destroy']);
     Route::post('/moduls/{id}/review', [ModulController::class, 'review']);
 
     // API Mapel

@@ -122,7 +122,7 @@ export const modulService = {
 
   // Delete module (Admin action)
   deleteModul: async (id) => {
-    const response = await API.delete(`/moduls/${id}`);
+    const response = await API.post(`/moduls/${id}/delete`);
     return response.data;
   }
 };
