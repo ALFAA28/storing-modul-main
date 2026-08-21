@@ -102,4 +102,20 @@ class ModulController extends Controller
             'data' => $modul
         ], 201);
     }
+
+    public function destroy($id)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'admin' && $user->role !== 'pengawas') {
+            return response()->json(['message' => 'Hanya admin yang memiliki izin untuk menghapus data perangkat.'], 403);
+        }
+
+        $modul = Modul::findOrFail($id);
+        $modul->catatanRevisis()->delete();
+        $modul->delete();
+
+        return response()->json([
+            'message' => 'Data perangkat pembelajaran berhasil dihapus!'
+        ], 200);
+    }
 }

@@ -118,6 +118,12 @@ export const modulService = {
       catatan_revisi: catatanRevisi,
     });
     return response.data;
+  },
+
+  // Delete module (Admin action)
+  deleteModul: async (id) => {
+    const response = await API.delete(`/moduls/${id}`);
+    return response.data;
   }
 };
 
