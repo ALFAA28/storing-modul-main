@@ -9,7 +9,7 @@ export default function LoginPage() {
 
   const handleSsoLogin = () => {
     // Redirect to Absensi login with redirect parameter back to SSO callback
-    window.location.href = `${absensiFrontendUrl}/login?redirect=${currentUrl}/sso-callback`;
+    window.location.href = `${absensiFrontendUrl}/login-storing?redirect=${currentUrl}/sso-callback`;
   };
 
   return (
