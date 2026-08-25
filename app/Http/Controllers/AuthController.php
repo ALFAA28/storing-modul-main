@@ -26,6 +26,7 @@ class AuthController extends Controller
             $response = Http::timeout(15)->post($absensiUrl . '/api/login', [
                 'email' => $request->email,
                 'password' => $request->password,
+                'app_source' => 'storing',
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -63,7 +64,15 @@ class AuthController extends Controller
             return response()->json(['message' => 'User tidak ditemukan di database lokal.'], 404);
         }
 
-        // 6. Create local Sanctum token
+        // 6. Validasi Sumber Akun (Khusus Storing Modul / Admin)
+        $userApp = $localUser->app_source ?? 'absensi';
+        if ($localUser->role !== 'admin' && $userApp !== 'storing') {
+            return response()->json([
+                'message' => 'Akun ini terdaftar untuk Web Absensi dan tidak dapat digunakan pada Web Storing Modul.'
+            ], 403);
+        }
+
+        // 7. Create local Sanctum token
         $token = $localUser->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -75,6 +84,7 @@ class AuthController extends Controller
                 'name' => $localUser->name,
                 'email' => $localUser->email,
                 'role' => $modulRole,
+                'app_source' => $userApp,
                 'nrg' => $localUser->nrg,
             ]
         ], 200);
@@ -128,7 +138,15 @@ class AuthController extends Controller
             return response()->json(['message' => 'User tidak ditemukan di database lokal.'], 404);
         }
 
-        // 6. Create local Sanctum token
+        // 6. Validasi Sumber Akun (Khusus Storing Modul / Admin)
+        $userApp = $localUser->app_source ?? 'absensi';
+        if ($localUser->role !== 'admin' && $userApp !== 'storing') {
+            return response()->json([
+                'message' => 'Akun ini terdaftar untuk Web Absensi dan tidak dapat digunakan pada Web Storing Modul.'
+            ], 403);
+        }
+
+        // 7. Create local Sanctum token
         $token = $localUser->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -140,6 +158,7 @@ class AuthController extends Controller
                 'name' => $localUser->name,
                 'email' => $localUser->email,
                 'role' => $modulRole,
+                'app_source' => $userApp,
                 'nrg' => $localUser->nrg,
             ]
         ], 200);
