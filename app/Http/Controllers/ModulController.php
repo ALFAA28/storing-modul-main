@@ -53,7 +53,7 @@ class ModulController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'mapel_id' => 'required|exists:mapels,id',
-            'jenis_perangkat' => 'required|in:modul,prota,promes',
+            'jenis_perangkat' => 'required|string|max:100',
             'file_pdf' => 'required|mimes:pdf|max:10240', 
         ]);
 
@@ -120,7 +120,7 @@ class ModulController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'mapel_id' => 'required|exists:mapels,id',
-            'jenis_perangkat' => 'required|in:modul,prota,promes',
+            'jenis_perangkat' => 'required|string|max:100',
             'file_pdf' => 'nullable|mimes:pdf|max:10240', 
         ]);
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { BookOpen, LayoutDashboard, FileText, UploadCloud, Users } from 'lucide-react';
+import { BookOpen, LayoutDashboard, FileText, UploadCloud, Users, Layers } from 'lucide-react';
 
 export default function Sidebar({ role, user, onUploadClick }) {
   const isGuru = role !== 'admin' && role !== 'pengawas';
@@ -13,6 +13,7 @@ export default function Sidebar({ role, user, onUploadClick }) {
     : [
         { name: 'Dashboard Admin', path: '/admin', icon: LayoutDashboard },
         { name: 'Data Master Modul', path: '/admin?tab=master', icon: Users },
+        { name: 'Kelola Mapel & Jenis', path: '/admin/master-data', icon: Layers },
       ];
 
   // Get user initials for avatar

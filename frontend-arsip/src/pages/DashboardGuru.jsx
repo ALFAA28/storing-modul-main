@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FileText, Plus, Search, Filter, HelpCircle, Eye, AlertCircle, CheckCircle, Clock, Edit3, Trash2 } from 'lucide-react';
-import { modulService } from '../services/api';
+import { modulService, jenisPerangkatService } from '../services/api';
 
 export default function DashboardGuru({ user, onOpenUpload, onOpenEdit, refreshTrigger, onOpenReview }) {
   const [searchParams] = useSearchParams();
@@ -12,6 +12,7 @@ export default function DashboardGuru({ user, onOpenUpload, onOpenEdit, refreshT
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJenis, setSelectedJenis] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [jenisOptions, setJenisOptions] = useState([]);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -29,8 +30,21 @@ export default function DashboardGuru({ user, onOpenUpload, onOpenEdit, refreshT
     }
   };
 
+  // Load jenis list for filter dropdown
+  const loadJenis = async () => {
+    try {
+      const res = await jenisPerangkatService.getAllJenis();
+      if (res.data && res.data.length > 0) {
+        setJenisOptions(res.data);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat jenis perangkat:', err);
+    }
+  };
+
   useEffect(() => {
     loadModuls();
+    loadJenis();
   }, [refreshTrigger]);
 
   const handleDelete = async () => {
@@ -57,9 +71,15 @@ export default function DashboardGuru({ user, onOpenUpload, onOpenEdit, refreshT
 
   // Filtered modules
   const filteredModuls = moduls.filter(m => {
-    const matchesSearch = m.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          m.mapel.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesJenis = selectedJenis ? m.jenis === selectedJenis : true;
+    const matchesSearch = (m.judul || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (m.mapel || '').toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const mJenis = (m.jenis || m.jenis_perangkat || '').toLowerCase();
+    const selJenis = selectedJenis.toLowerCase();
+    const matchesJenis = selectedJenis 
+      ? (mJenis === selJenis || (m.jenis && m.jenis.toLowerCase().includes(selJenis))) 
+      : true;
+
     const matchesStatus = selectedStatus ? m.status === selectedStatus : true;
     return matchesSearch && matchesJenis && matchesStatus;
   });
@@ -177,16 +197,26 @@ export default function DashboardGuru({ user, onOpenUpload, onOpenEdit, refreshT
               />
             </div>
 
-            {/* Filter Jenis */}
+            {/* Filter Jenis Dinamis */}
             <select
               value={selectedJenis}
               onChange={(e) => setSelectedJenis(e.target.value)}
               className="px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs font-medium text-slate-600 focus:outline-none focus:border-indigo-500 cursor-pointer"
             >
               <option value="">Semua Perangkat</option>
-              <option value="Modul">Modul / RPP</option>
-              <option value="Prota">Prota</option>
-              <option value="Promes">Promes</option>
+              {jenisOptions.length > 0 ? (
+                jenisOptions.map((j) => (
+                  <option key={j.id || j.kode} value={j.kode || j.nama_jenis}>
+                    {j.nama_jenis}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="Modul">Modul / RPP</option>
+                  <option value="Prota">Prota</option>
+                  <option value="Promes">Promes</option>
+                </>
+              )}
             </select>
 
             {/* Filter Status */}

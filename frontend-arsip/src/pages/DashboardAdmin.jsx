@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { FileText, Search, ShieldAlert, CheckCircle, Clock, Eye, AlertCircle, RefreshCw, Trash2, Edit3, Plus } from 'lucide-react';
-import { modulService } from '../services/api';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { FileText, Search, ShieldAlert, CheckCircle, Clock, Eye, AlertCircle, RefreshCw, Trash2, Edit3, Plus, Layers } from 'lucide-react';
+import { modulService, jenisPerangkatService } from '../services/api';
 
 export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdit, onOpenUpload }) {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const isMasterTab = searchParams.get('tab') === 'master';
 
   const [moduls, setModuls] = useState([]);
@@ -12,6 +13,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJenis, setSelectedJenis] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [jenisOptions, setJenisOptions] = useState([]);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -29,8 +31,21 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
     }
   };
 
+  // Load jenis list for filter dropdown
+  const loadJenis = async () => {
+    try {
+      const res = await jenisPerangkatService.getAllJenis();
+      if (res.data && res.data.length > 0) {
+        setJenisOptions(res.data);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat jenis perangkat:', err);
+    }
+  };
+
   useEffect(() => {
     loadModuls();
+    loadJenis();
   }, [refreshTrigger]);
 
   const handleDelete = async () => {
@@ -57,10 +72,17 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
 
   // Filtered modules
   const filteredModuls = moduls.filter(m => {
-    const matchesSearch = m.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          m.mapel.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = (m.judul || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (m.mapel || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (m.user?.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesJenis = selectedJenis ? m.jenis === selectedJenis : true;
+    
+    // Support matching both exact string or lowercased kode
+    const mJenis = (m.jenis || m.jenis_perangkat || '').toLowerCase();
+    const selJenis = selectedJenis.toLowerCase();
+    const matchesJenis = selectedJenis 
+      ? (mJenis === selJenis || (m.jenis && m.jenis.toLowerCase().includes(selJenis))) 
+      : true;
+
     const matchesStatus = selectedStatus ? m.status === selectedStatus : true;
     return matchesSearch && matchesJenis && matchesStatus;
   });
@@ -92,13 +114,20 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
                 Tinjau, verifikasi, dan kelola perangkat pembelajaran yang diunggah oleh seluruh guru.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={loadModuls}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Segarkan</span>
+              </button>
+              <button
+                onClick={() => navigate('/admin/master-data')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-indigo-200"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Kelola Mapel & Jenis</span>
               </button>
               <button
                 onClick={onOpenUpload}
@@ -186,16 +215,26 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
               />
             </div>
 
-            {/* Filter Jenis */}
+            {/* Filter Jenis Dinamis */}
             <select
               value={selectedJenis}
               onChange={(e) => setSelectedJenis(e.target.value)}
               className="px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs font-medium text-slate-600 focus:outline-none focus:border-indigo-500 cursor-pointer"
             >
               <option value="">Semua Perangkat</option>
-              <option value="Modul">Modul / RPP</option>
-              <option value="Prota">Prota</option>
-              <option value="Promes">Promes</option>
+              {jenisOptions.length > 0 ? (
+                jenisOptions.map((j) => (
+                  <option key={j.id || j.kode} value={j.kode || j.nama_jenis}>
+                    {j.nama_jenis}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="Modul">Modul / RPP</option>
+                  <option value="Prota">Prota</option>
+                  <option value="Promes">Promes</option>
+                </>
+              )}
             </select>
 
             {/* Filter Status */}
@@ -248,7 +287,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
                 {filteredModuls.map((modul) => (
                   <tr key={modul.id} className="hover:bg-slate-50/50 transition-colors">
                     
-                    {/* Wajib ada kolom Nama Guru */}
+                    {/* Kolom Nama Guru */}
                     <td className="py-4 px-6 font-semibold text-slate-800">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-slate-100 border flex items-center justify-center font-bold text-slate-600 text-[10px]">

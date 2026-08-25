@@ -40,6 +40,28 @@ class MapelController extends Controller
     }
 
     /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama_mapel' => 'required|string|max:255',
+            'tingkat_kelas' => 'required|string|max:50',
+        ]);
+
+        $mapel = Mapel::findOrFail($id);
+        $mapel->update([
+            'nama_mapel' => $request->nama_mapel,
+            'tingkat_kelas' => $request->tingkat_kelas,
+        ]);
+
+        return response()->json([
+            'message' => 'Mata pelajaran berhasil diperbarui!',
+            'data' => $mapel
+        ], 200);
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy($id)

@@ -149,8 +149,34 @@ export const mapelService = {
     const response = await API.post('/mapels', data);
     return response.data;
   },
+  updateMapel: async (id, data) => {
+    const response = await API.put(`/mapels/${id}`, data);
+    return response.data;
+  },
   deleteMapel: async (id) => {
     const response = await API.delete(`/mapels/${id}`);
+    return response.data;
+  }
+};
+
+// =============================================
+// JENIS PERANGKAT SERVICES
+// =============================================
+export const jenisPerangkatService = {
+  getAllJenis: async () => {
+    const response = await API.get('/jenis-perangkat');
+    return response.data;
+  },
+  createJenis: async (data) => {
+    const response = await API.post('/jenis-perangkat', data);
+    return response.data;
+  },
+  updateJenis: async (id, data) => {
+    const response = await API.put(`/jenis-perangkat/${id}`, data);
+    return response.data;
+  },
+  deleteJenis: async (id) => {
+    const response = await API.delete(`/jenis-perangkat/${id}`);
     return response.data;
   }
 };

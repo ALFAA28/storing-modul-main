@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import SSOCallback from './pages/SSOCallback';
 import DashboardGuru from './pages/DashboardGuru';
 import DashboardAdmin from './pages/DashboardAdmin';
+import KelolaMasterData from './pages/KelolaMasterData';
 import UploadModal from './components/UploadModal';
 import ReviewModal from './components/ReviewModal';
 import { authService } from './services/api';
@@ -122,6 +123,28 @@ export default function App() {
               </Layout>
             </ProtectedRoute>
           } 
+        />
+
+        {/* Admin Master Data Route (Mapel & Jenis Perangkat) */}
+        <Route 
+          path="/admin/master-data" 
+          element={
+            <ProtectedRoute>
+              <Layout 
+                role={role} 
+                user={user}
+                onUploadClick={handleOpenNewUpload}
+                onLogout={handleLogout}
+              >
+                <KelolaMasterData />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin/kelola-master" 
+          element={<Navigate to="/admin/master-data" replace />} 
         />
 
         {/* Fallback Redirection */}

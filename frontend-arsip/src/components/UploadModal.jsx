@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, FileText, Upload, AlertCircle, CheckCircle, Edit3 } from 'lucide-react';
-import { modulService, mapelService } from '../services/api';
+import { modulService, mapelService, jenisPerangkatService } from '../services/api';
 
 export default function UploadModal({ isOpen, editData = null, onClose, onUploadSuccess }) {
   if (!isOpen) return null;
@@ -16,6 +16,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [mapels, setMapels] = useState([]);
+  const [jenisList, setJenisList] = useState([]);
 
   // State untuk Tambah Mapel Baru
   const [showAddMapel, setShowAddMapel] = useState(false);
@@ -35,19 +36,39 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
     }
   };
 
+  const fetchJenisList = async () => {
+    try {
+      const res = await jenisPerangkatService.getAllJenis();
+      if (res.data && res.data.length > 0) {
+        setJenisList(res.data);
+      } else {
+        setJenisList([
+          { id: '1', kode: 'modul', nama_jenis: 'Modul Ajar / RPP' },
+          { id: '2', kode: 'prota', nama_jenis: 'Program Tahunan (Prota)' },
+          { id: '3', kode: 'promes', nama_jenis: 'Program Semester (Promes)' },
+        ]);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat jenis perangkat dari backend:', err);
+      setJenisList([
+        { id: '1', kode: 'modul', nama_jenis: 'Modul Ajar / RPP' },
+        { id: '2', kode: 'prota', nama_jenis: 'Program Tahunan (Prota)' },
+        { id: '3', kode: 'promes', nama_jenis: 'Program Semester (Promes)' },
+      ]);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchMapels();
+      fetchJenisList();
+
       if (editData) {
         setJudul(editData.judul || '');
         setMapelId(editData.mapel_id ? String(editData.mapel_id) : '');
         
-        // Capitalize jenis properly (Modul/Prota/Promes)
-        const j = editData.jenis || editData.jenis_perangkat || '';
-        if (j.toLowerCase() === 'modul') setJenis('Modul');
-        else if (j.toLowerCase() === 'prota') setJenis('Prota');
-        else if (j.toLowerCase() === 'promes') setJenis('Promes');
-        else setJenis(j);
+        const rawJenis = (editData.jenis_perangkat || editData.jenis || '').toLowerCase();
+        setJenis(rawJenis);
 
         setFile(null);
         setError('');
@@ -62,12 +83,6 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
       }
     }
   }, [isOpen, editData]);
-
-  const jenisOptions = [
-    { value: 'Modul', label: 'Modul Ajar / RPP' },
-    { value: 'Prota', label: 'Program Tahunan (Prota)' },
-    { value: 'Promes', label: 'Program Semester (Promes)' }
-  ];
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -198,7 +213,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
         <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
@@ -207,7 +222,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
               {isEdit ? 'Edit Perangkat Pembelajaran' : 'Unggah Perangkat Pembelajaran'}
             </h3>
             <p className="text-xs text-slate-500">
-              {isEdit ? 'Ubah judul, mata pelajaran, jenis, atau file perangkat' : 'Tambahkan modul, prota, atau promes baru'}
+              {isEdit ? 'Ubah judul, mata pelajaran, jenis, atau file perangkat' : 'Tambahkan berkas perangkat pembelajaran baru'}
             </p>
           </div>
           <button 
@@ -240,7 +255,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
           {/* Judul Dokumen */}
           <div>
             <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-              Judul Perangkat
+              Judul Perangkat <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -258,7 +273,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Mata Pelajaran
+                  Mata Pelajaran <span className="text-rose-500">*</span>
                 </label>
                 <button
                   type="button"
@@ -318,10 +333,10 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
               )}
             </div>
 
-            {/* Dropdown Jenis Perangkat */}
+            {/* Dropdown Jenis Perangkat Dinamis */}
             <div>
               <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                Jenis Perangkat
+                Jenis Perangkat <span className="text-rose-500">*</span>
               </label>
               <select
                 value={jenis}
@@ -330,9 +345,14 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all appearance-none cursor-pointer"
               >
                 <option value="">-- Pilih Jenis --</option>
-                {jenisOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
+                {jenisList.map((opt) => {
+                  const val = opt.kode || opt.nama_jenis.toLowerCase();
+                  return (
+                    <option key={opt.id || val} value={val}>
+                      {opt.nama_jenis}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>
