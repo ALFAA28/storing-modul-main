@@ -73,14 +73,14 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
   // Filtered modules
   const filteredModuls = moduls.filter(m => {
     const matchesSearch = (m.judul || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (m.mapel || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (m.user?.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
+      (m.mapel || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.user?.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+
     // Support matching both exact string or lowercased kode
     const mJenis = (m.jenis || m.jenis_perangkat || '').toLowerCase();
     const selJenis = selectedJenis.toLowerCase();
-    const matchesJenis = selectedJenis 
-      ? (mJenis === selJenis || (m.jenis && m.jenis.toLowerCase().includes(selJenis))) 
+    const matchesJenis = selectedJenis
+      ? (mJenis === selJenis || (m.jenis && m.jenis.toLowerCase().includes(selJenis)))
       : true;
 
     const matchesStatus = selectedStatus ? m.status === selectedStatus : true;
@@ -101,7 +101,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
 
   return (
     <div className="space-y-6">
-      
+
       {!isMasterTab && (
         <>
           {/* Welcome Header */}
@@ -127,7 +127,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
                 className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-all cursor-pointer border border-indigo-200"
               >
                 <Layers className="w-3.5 h-3.5" />
-                <span>Kelola Mapel & Jenis</span>
+                <span>Kelola Mapel & Jenis Perangkat</span>
               </button>
               <button
                 onClick={onOpenUpload}
@@ -141,7 +141,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
 
           {/* Stats Section */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            
+
             {/* Total Submission Card */}
             <div className="glass-card shadow-premium p-4 sm:p-5 rounded-2xl flex items-center justify-between group hover:scale-[1.01] transition-all-custom">
               <div>
@@ -192,14 +192,14 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
 
       {/* Master Data Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-premium overflow-hidden">
-        
+
         {/* Table Header Filter Control */}
         <div className="p-5 border-b border-slate-150 bg-slate-50/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-slate-500" />
             <h2 className="text-sm font-bold text-slate-700">Master Data Perangkat Pembelajaran</h2>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             {/* Search Input */}
             <div className="relative min-w-[220px] flex-1 sm:flex-none">
@@ -265,7 +265,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
               </div>
               <h3 className="text-sm font-bold text-slate-700">Dokumen tidak ditemukan</h3>
               <p className="text-xs text-slate-450 mt-1 max-w-xs">
-                {searchQuery || selectedJenis || selectedStatus 
+                {searchQuery || selectedJenis || selectedStatus
                   ? 'Cobalah ubah kata kunci pencarian atau bersihkan filter Anda.'
                   : 'Belum ada guru yang mengunggah berkas perangkat pembelajaran.'}
               </p>
@@ -286,12 +286,12 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
               <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                 {filteredModuls.map((modul) => (
                   <tr key={modul.id} className="hover:bg-slate-50/50 transition-colors">
-                    
+
                     {/* Kolom Nama Guru */}
                     <td className="py-4 px-6 font-semibold text-slate-800">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-slate-100 border flex items-center justify-center font-bold text-slate-600 text-[10px]">
-                          {modul.user?.name ? modul.user.name.split(' ').map(n=>n[0]).slice(0,2).join('') : 'G'}
+                          {modul.user?.name ? modul.user.name.split(' ').map(n => n[0]).slice(0, 2).join('') : 'G'}
                         </div>
                         <div>
                           <p className="font-bold text-slate-800">{modul.user?.name || 'Guru Pengampu'}</p>
@@ -307,11 +307,10 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
                           {modul.judul}
                         </p>
                         {modul.catatan_revisi && (
-                          <p className={`text-[9px] mt-1 py-0.5 px-2 rounded-md inline-block font-medium border ${
-                            modul.status === 'Revisi' 
-                              ? 'bg-rose-50/40 text-rose-600 border-rose-100/40' 
+                          <p className={`text-[9px] mt-1 py-0.5 px-2 rounded-md inline-block font-medium border ${modul.status === 'Revisi'
+                              ? 'bg-rose-50/40 text-rose-600 border-rose-100/40'
                               : 'bg-emerald-50/40 text-emerald-600 border-emerald-100/30'
-                          }`}>
+                            }`}>
                             Catatan: "{modul.catatan_revisi}"
                           </p>
                         )}
@@ -337,20 +336,18 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
 
                     {/* Status Badge */}
                     <td className="py-4 px-6">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        modul.status === 'ACC'
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${modul.status === 'ACC'
                           ? 'bg-emerald-100 text-emerald-800'
                           : modul.status === 'Revisi'
-                          ? 'bg-rose-100 text-rose-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          modul.status === 'ACC'
+                            ? 'bg-rose-100 text-rose-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${modul.status === 'ACC'
                             ? 'bg-emerald-500'
                             : modul.status === 'Revisi'
-                            ? 'bg-rose-500'
-                            : 'bg-amber-500'
-                        }`} />
+                              ? 'bg-rose-500'
+                              : 'bg-amber-500'
+                          }`} />
                         {modul.status}
                       </span>
                     </td>
