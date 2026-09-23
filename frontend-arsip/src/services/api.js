@@ -186,15 +186,15 @@ export const jenisPerangkatService = {
 // =============================================
 export const userService = {
   getPendingUsers: async () => {
-    const response = await API.get('/admin/users');
+    const response = await API.get('/users/pending');
     return response.data;
   },
   approveUser: async (id) => {
-    const response = await API.post(`/admin/users/${id}/approve`);
+    const response = await API.post(`/users/${id}/approve`);
     return response.data;
   },
   deleteUser: async (id) => {
-    const response = await API.delete(`/admin/users/${id}`);
+    const response = await API.delete(`/users/${id}`);
     return response.data;
   }
 };
