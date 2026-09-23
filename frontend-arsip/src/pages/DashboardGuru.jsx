@@ -105,7 +105,7 @@ export default function DashboardGuru({ user, onOpenUpload, onOpenEdit, refreshT
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-xl font-extrabold text-slate-800 tracking-tight sm:text-2xl">
-                Halo, {user?.name || 'Guru'} 👋
+                Halo, {user?.name ? user.name.split(' ')[0] : 'Guru'} 👋
               </h1>
               <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
                 Berikut adalah ringkasan perangkat pembelajaran yang Anda unggah semester ini.

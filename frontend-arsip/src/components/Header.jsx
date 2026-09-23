@@ -6,8 +6,12 @@ export default function Header({ role, user, toggleSidebar, onLogout }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await onLogout();
-    navigate('/login', { replace: true });
+    try {
+      await onLogout();
+    } catch (e) {
+      console.error("Logout error", e);
+    }
+    window.location.href = '/login';
   };
 
   // Get user initials for avatar
@@ -38,11 +42,6 @@ export default function Header({ role, user, toggleSidebar, onLogout }) {
 
       {/* Right items: Profile Info & Logout */}
       <div className="flex items-center gap-4">
-        {/* Notifications */}
-        <button className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 relative cursor-pointer">
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-        </button>
 
         {/* Profile & Logout */}
         <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
