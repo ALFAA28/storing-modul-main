@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, CheckCircle, AlertTriangle, MessageSquare, ExternalLink, Download, Clock, RefreshCw } from 'lucide-react';
+import { X, FileText, CheckCircle, AlertTriangle, MessageSquare, ExternalLink, Download, Clock, RefreshCw, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { modulService } from '../services/api';
 
 export default function ReviewModal({ isOpen, document: doc, role, onClose, onReviewSuccess }) {
@@ -52,14 +52,16 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
 
   const pdfUrl = doc.file_path || '';
   const [page, setPage] = useState(1);
-  const [viewerMode, setViewerMode] = useState('google'); // 'google' | 'native' | 'cloudinary-img'
+  const [viewerMode, setViewerMode] = useState('google'); // 'google' | 'native' | 'cloudinary-img' | 'office'
   const [iframeLoading, setIframeLoading] = useState(true);
   const [iframeError, setIframeError] = useState(false);
+  const [zoom, setZoom] = useState(1);
 
   // Reset viewer state when doc changes
   useEffect(() => {
     if (doc) {
       setPage(1);
+      setZoom(1);
       setIframeLoading(true);
       setIframeError(false);
       
@@ -216,36 +218,73 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
               {pdfUrl ? (
                 viewerMode === 'cloudinary-img' && cloudPageImageUrl ? (
                   /* Cloudinary Image per-page viewer (only for /image/upload/) */
-                  <div className="w-full h-full flex flex-col items-center justify-between overflow-auto p-2 sm:p-3 space-y-2">
-                    <div className="flex-1 flex items-center justify-center w-full min-h-0">
-                      <img
-                        src={cloudPageImageUrl}
-                        alt={`Pratinjau Dokumen Halaman ${page}`}
-                        onError={() => {
-                          if (page > 1) setPage(1);
-                        }}
-                        className="max-h-full max-w-full object-contain rounded-lg shadow-2xl border border-slate-700 bg-white"
-                      />
+                  <div className="w-full h-full flex flex-col items-center justify-between overflow-auto p-2 sm:p-3 space-y-2 relative">
+                    <div className="flex-1 flex items-center justify-center w-full min-h-0 overflow-auto relative">
+                      <div className="flex items-center justify-center min-w-full min-h-full">
+                        <img
+                          src={cloudPageImageUrl}
+                          alt={`Pratinjau Dokumen Halaman ${page}`}
+                          style={{ transform: `scale(${zoom})`, transformOrigin: 'center center', transition: 'transform 0.2s ease-in-out' }}
+                          onError={() => {
+                            if (page > 1) { setPage(1); setZoom(1); }
+                          }}
+                          className={`max-w-full object-contain shadow-2xl border border-slate-700 bg-white ${zoom === 1 ? 'max-h-full rounded-lg' : ''}`}
+                        />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 sm:gap-4 bg-slate-900/95 border border-slate-700 px-4 py-1.5 rounded-full shrink-0 shadow-lg mt-2">
-                      <button
-                        type="button"
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                        disabled={page <= 1}
-                        className="text-xs font-bold text-slate-300 hover:text-white disabled:opacity-30 cursor-pointer px-2 py-0.5"
-                      >
-                        ◀ Prev
-                      </button>
-                      <span className="text-xs font-bold text-indigo-400">
-                        Halaman {page}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setPage(p => p + 1)}
-                        className="text-xs font-bold text-slate-300 hover:text-white cursor-pointer px-2 py-0.5"
-                      >
-                        Next ▶
-                      </button>
+                    
+                    {/* Pagination & Zoom Controls */}
+                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 shrink-0 mt-2 z-10">
+                      {/* Zoom Controls */}
+                      <div className="flex items-center gap-1 bg-slate-900/95 border border-slate-700 px-3 py-1.5 rounded-full shadow-lg">
+                        <button
+                          type="button"
+                          onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}
+                          className="p-1 text-slate-300 hover:text-white hover:bg-slate-700 rounded transition-colors"
+                          title="Perkecil"
+                        >
+                          <ZoomOut className="w-4 h-4" />
+                        </button>
+                        <span className="text-[10px] font-bold text-slate-400 w-10 text-center">{Math.round(zoom * 100)}%</span>
+                        <button
+                          type="button"
+                          onClick={() => setZoom(z => Math.min(4, z + 0.25))}
+                          className="p-1 text-slate-300 hover:text-white hover:bg-slate-700 rounded transition-colors"
+                          title="Perbesar"
+                        >
+                          <ZoomIn className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setZoom(1)}
+                          className="p-1 text-slate-300 hover:text-white hover:bg-slate-700 rounded transition-colors ml-1"
+                          title="Reset Zoom"
+                        >
+                          <Maximize className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Pagination Controls */}
+                      <div className="flex items-center gap-3 sm:gap-4 bg-slate-900/95 border border-slate-700 px-4 py-1.5 rounded-full shadow-lg">
+                        <button
+                          type="button"
+                          onClick={() => { setPage(p => Math.max(1, p - 1)); setZoom(1); }}
+                          disabled={page <= 1}
+                          className="text-xs font-bold text-slate-300 hover:text-white disabled:opacity-30 cursor-pointer px-2 py-0.5"
+                        >
+                          ◀ Prev
+                        </button>
+                        <span className="text-xs font-bold text-indigo-400">
+                          Halaman {page}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => { setPage(p => p + 1); setZoom(1); }}
+                          className="text-xs font-bold text-slate-300 hover:text-white cursor-pointer px-2 py-0.5"
+                        >
+                          Next ▶
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : viewerMode === 'office' ? (
