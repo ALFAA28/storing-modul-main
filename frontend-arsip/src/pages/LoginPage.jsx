@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   useEffect(() => {
-    const absensiFrontendUrl = 'https://absensi-smk-nu-donomulyo.vercel.app';
+    const absensiFrontendUrl = import.meta.env.VITE_ABSENSI_FRONTEND_URL || 'https://absensi-smk-nu-donomulyo.vercel.app';
     // In a real environment you'd use window.location.origin
     const currentUrl = window.location.origin;
 
