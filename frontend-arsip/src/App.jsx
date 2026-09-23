@@ -18,6 +18,17 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+// Role-based Protected Route wrapper
+function RoleProtectedRoute({ children, allowedRoles, currentRole }) {
+  if (!authService.isLoggedIn()) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!allowedRoles.includes(currentRole)) {
+    return <Navigate to={currentRole === 'admin' ? '/admin' : '/guru'} replace />;
+  }
+  return children;
+}
+
 export default function App() {
   const [user, setUser] = useState(authService.getUser());
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -84,7 +95,7 @@ export default function App() {
         <Route 
           path="/guru" 
           element={
-            <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={['guru']} currentRole={role}>
               <Layout 
                 role={role} 
                 user={user}
@@ -99,7 +110,7 @@ export default function App() {
                   onOpenReview={handleOpenReview}
                 />
               </Layout>
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           } 
         />
         
@@ -107,7 +118,7 @@ export default function App() {
         <Route 
           path="/admin" 
           element={
-            <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={['admin']} currentRole={role}>
               <Layout 
                 role={role} 
                 user={user}
@@ -121,7 +132,7 @@ export default function App() {
                   onOpenUpload={handleOpenNewUpload}
                 />
               </Layout>
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           } 
         />
 
@@ -129,7 +140,7 @@ export default function App() {
         <Route 
           path="/admin/master-data" 
           element={
-            <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={['admin']} currentRole={role}>
               <Layout 
                 role={role} 
                 user={user}
@@ -138,7 +149,7 @@ export default function App() {
               >
                 <KelolaMasterData />
               </Layout>
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           } 
         />
 
