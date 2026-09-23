@@ -56,9 +56,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/jenis-perangkat/{id}/delete', [JenisPerangkatController::class, 'destroy']);
 
     // API Kelola Akun (Admin Only)
+    Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/pending', [UserController::class, 'pendingUsers']);
-    Route::get('/users/approved', [UserController::class, 'approvedUsers']);
     Route::post('/users/{id}/approve', [UserController::class, 'approve']);
+    Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
+    Route::put('/users/{id}/role', [UserController::class, 'updateRole']);
+    Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
-    Route::post('/users/{id}/delete', [UserController::class, 'destroy']);
 });

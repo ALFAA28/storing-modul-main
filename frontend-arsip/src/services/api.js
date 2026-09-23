@@ -185,12 +185,28 @@ export const jenisPerangkatService = {
 // USER SERVICES (Admin - Kelola Akun)
 // =============================================
 export const userService = {
+  getAllUsers: async () => {
+    const response = await API.get('/users');
+    return response.data;
+  },
   getPendingUsers: async () => {
     const response = await API.get('/users/pending');
     return response.data;
   },
   approveUser: async (id) => {
     const response = await API.post(`/users/${id}/approve`);
+    return response.data;
+  },
+  updateStatus: async (id, status) => {
+    const response = await API.put(`/users/${id}/status`, { status });
+    return response.data;
+  },
+  updateRole: async (id, data) => {
+    const response = await API.put(`/users/${id}/role`, data);
+    return response.data;
+  },
+  resetPassword: async (id) => {
+    const response = await API.put(`/users/${id}/reset-password`);
     return response.data;
   },
   deleteUser: async (id) => {
