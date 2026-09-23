@@ -416,8 +416,8 @@ export default function KelolaMasterData() {
                   </div>
                   <h3 className="text-sm font-bold text-slate-700">Mata Pelajaran Tidak Ditemukan</h3>
                   <p className="text-xs text-slate-450 mt-1 max-w-xs">
-                    {searchMapel || filterTingkat 
-                      ? 'Tidak ada mapel yang cocok dengan pencarian / filter Anda.'
+                    {searchMapel 
+                      ? 'Tidak ada mapel yang cocok dengan pencarian Anda.'
                       : 'Belum ada data mata pelajaran. Klik tombol "Tambah Mapel" untuk membuat data baru.'}
                   </p>
                 </div>
