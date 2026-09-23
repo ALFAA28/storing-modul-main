@@ -22,6 +22,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
   const [showAddMapel, setShowAddMapel] = useState(false);
   const [newMapelNama, setNewMapelNama] = useState('');
   const [newMapelTingkat, setNewMapelTingkat] = useState('10');
+  const [newMapelJurusan, setNewMapelJurusan] = useState('');
   const [savingMapel, setSavingMapel] = useState(false);
   const [mapelError, setMapelError] = useState('');
 
@@ -139,14 +140,19 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
     setSavingMapel(true);
     setMapelError('');
     try {
-      const res = await mapelService.createMapel({
+      const payload = {
         nama_mapel: newMapelNama.trim(),
         tingkat_kelas: newMapelTingkat,
-      });
+      };
+      if (newMapelJurusan) {
+        payload.jurusan = newMapelJurusan;
+      }
+      const res = await mapelService.createMapel(payload);
       const created = res.data;
       setMapels(prev => [...prev, created]);
       setMapelId(String(created.id));
       setNewMapelNama('');
+      setNewMapelJurusan('');
       setShowAddMapel(false);
     } catch (err) {
       setMapelError(err.response?.data?.message || 'Gagal menambahkan mata pelajaran.');
@@ -306,15 +312,25 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
                       <option value="12">Kelas 12</option>
                       <option value="Umum">Semua Kelas</option>
                     </select>
-                    <button
-                      type="button"
-                      onClick={handleSaveMapel}
-                      disabled={savingMapel}
-                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 cursor-pointer shrink-0"
+                    <select
+                      value={newMapelJurusan}
+                      onChange={(e) => setNewMapelJurusan(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-xs focus:outline-none focus:border-indigo-500"
                     >
-                      {savingMapel ? 'Menyimpan...' : 'Simpan Mapel'}
-                    </button>
+                      <option value="">Tanpa Jurusan</option>
+                      <option value="TKR">TKR</option>
+                      <option value="LPKC">LPKC</option>
+                      <option value="DKV">DKV</option>
+                    </select>
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleSaveMapel}
+                    disabled={savingMapel}
+                    className="w-full px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {savingMapel ? 'Menyimpan...' : 'Simpan Mapel'}
+                  </button>
                 </div>
               ) : (
                 <select

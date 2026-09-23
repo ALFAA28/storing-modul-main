@@ -57,7 +57,7 @@ export default function Sidebar({ role, user, onUploadClick }) {
         </div>
         <div>
           <h1 className="text-white font-bold text-sm leading-tight tracking-wide">Arsip Modul</h1>
-          <span className="text-[10px] text-slate-500 font-bold tracking-wider uppercase">Pembelajaran</span>
+          <span className="text-[10px] text-slate-500 font-bold tracking-wider uppercase">SMK NU Donomulyo</span>
         </div>
       </div>
 
@@ -114,11 +114,6 @@ export default function Sidebar({ role, user, onUploadClick }) {
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate">
               {role === 'admin' ? 'Admin / Pengawas' : 'Guru'}
             </p>
-            {user?.nrg && (
-              <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
-                NRG: {user.nrg}
-              </p>
-            )}
           </div>
         </div>
       </div>

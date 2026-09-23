@@ -46,11 +46,11 @@ class AuthController extends Controller
         $absensiData = $response->json();
         $absensiUser = $absensiData['user'] ?? [];
 
-        // 3. Map Absensi role to Storing Modul role
+        // 3. Map Absensi role to Arsip Modul Pembelajaran role
         $absensiRole = $absensiUser['role'] ?? 'guru_mapel';
         $modulRole = $this->mapRole($absensiRole);
 
-        // 4. Block roles that shouldn't access Storing Modul (e.g. sarpras)
+        // 4. Block roles that shouldn't access Arsip Modul Pembelajaran (e.g. sarpras)
         if ($modulRole === null) {
             return response()->json([
                 'message' => 'Akun Anda tidak memiliki akses ke sistem Arsip Modul Pembelajaran.'
@@ -64,11 +64,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'User tidak ditemukan di database lokal.'], 404);
         }
 
-        // 6. Validasi Sumber Akun (Khusus Storing Modul / Admin)
+        // 6. Validasi Sumber Akun (Khusus Arsip Modul Pembelajaran / Admin)
         $userApp = $localUser->app_source ?? 'absensi';
         if ($localUser->role !== 'admin' && $userApp !== 'storing') {
             return response()->json([
-                'message' => 'Akun ini terdaftar untuk Web Absensi dan tidak dapat digunakan pada Web Storing Modul.'
+                'message' => 'Akun ini terdaftar untuk Web Absensi dan tidak dapat digunakan pada Web Arsip Modul Pembelajaran.'
             ], 403);
         }
 
@@ -120,11 +120,11 @@ class AuthController extends Controller
 
         $absensiUser = $response->json();
 
-        // 3. Map Absensi role to Storing Modul role
+        // 3. Map Absensi role to Arsip Modul Pembelajaran role
         $absensiRole = $absensiUser['role'] ?? 'guru_mapel';
         $modulRole = $this->mapRole($absensiRole);
 
-        // 4. Block roles that shouldn't access Storing Modul (e.g. sarpras)
+        // 4. Block roles that shouldn't access Arsip Modul Pembelajaran (e.g. sarpras)
         if ($modulRole === null) {
             return response()->json([
                 'message' => 'Akun Anda tidak memiliki akses ke sistem Arsip Modul Pembelajaran.'
@@ -138,11 +138,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'User tidak ditemukan di database lokal.'], 404);
         }
 
-        // 6. Validasi Sumber Akun (Khusus Storing Modul / Admin)
+        // 6. Validasi Sumber Akun (Khusus Arsip Modul Pembelajaran / Admin)
         $userApp = $localUser->app_source ?? 'absensi';
         if ($localUser->role !== 'admin' && $userApp !== 'storing') {
             return response()->json([
-                'message' => 'Akun ini terdaftar untuk Web Absensi dan tidak dapat digunakan pada Web Storing Modul.'
+                'message' => 'Akun ini terdaftar untuk Web Absensi dan tidak dapat digunakan pada Web Arsip Modul Pembelajaran.'
             ], 403);
         }
 
@@ -177,7 +177,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Map Absensi role to Storing Modul role.
+     * Map Absensi role to Arsip Modul Pembelajaran role.
      * Returns null if the role should not have access.
      */
     private function mapRole(string $absensiRole): ?string

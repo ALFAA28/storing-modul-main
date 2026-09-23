@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, CheckCircle, AlertTriangle, MessageSquare, ExternalLink, Download, Clock } from 'lucide-react';
+import { X, FileText, CheckCircle, AlertTriangle, MessageSquare, ExternalLink, Download, Clock, RefreshCw } from 'lucide-react';
 import { modulService } from '../services/api';
 
 export default function ReviewModal({ isOpen, document: doc, role, onClose, onReviewSuccess }) {
@@ -52,19 +52,82 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
 
   const pdfUrl = doc.file_path || '';
   const [page, setPage] = useState(1);
-  const [viewMode, setViewMode] = useState('auto'); // 'auto' | 'google' | 'native'
+  const [viewerMode, setViewerMode] = useState('google'); // 'google' | 'native' | 'cloudinary-img'
+  const [iframeLoading, setIframeLoading] = useState(true);
+  const [iframeError, setIframeError] = useState(false);
 
-  const isCloudinaryImage = pdfUrl.includes('res.cloudinary.com') && pdfUrl.includes('/image/upload/');
-  const cloudPageImageUrl = isCloudinaryImage 
+  // Reset viewer state when doc changes
+  useEffect(() => {
+    if (doc) {
+      setPage(1);
+      setIframeLoading(true);
+      setIframeError(false);
+      // Determine best initial viewer mode
+      if (isCloudinaryImageUpload(pdfUrl)) {
+        setViewerMode('cloudinary-img');
+      } else {
+        setViewerMode('google');
+      }
+    }
+  }, [doc]);
+
+  // Detect Cloudinary URL types
+  const isCloudinaryUrl = pdfUrl.includes('res.cloudinary.com');
+  
+  function isCloudinaryImageUpload(url) {
+    return url.includes('res.cloudinary.com') && url.includes('/image/upload/');
+  }
+  
+  function isCloudinaryRawUpload(url) {
+    return url.includes('res.cloudinary.com') && url.includes('/raw/upload/');
+  }
+
+  // Cloudinary image page-by-page (only works for /image/upload/)
+  const cloudPageImageUrl = isCloudinaryImageUpload(pdfUrl)
     ? pdfUrl.replace('/image/upload/', `/image/upload/pg_${page}/`).replace(/\.pdf$/i, '.jpg')
     : null;
 
+  // Google Docs Viewer URL
   const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+  
+  // Direct PDF URL for native browser viewer
   const directPdfUrl = `${pdfUrl}#toolbar=1&navpanes=0`;
 
-  const openInNewTabUrl = (pdfUrl.includes('res.cloudinary.com') && pdfUrl.includes('/image/upload/'))
+  // URL for opening in new tab
+  const openInNewTabUrl = isCloudinaryImageUpload(pdfUrl)
     ? pdfUrl.replace('/image/upload/', `/image/upload/pg_${page}/`).replace(/\.pdf$/i, '.jpg')
     : pdfUrl;
+
+  const handleSwitchViewer = () => {
+    setIframeLoading(true);
+    setIframeError(false);
+    if (viewerMode === 'google') {
+      setViewerMode('native');
+    } else if (viewerMode === 'native') {
+      if (isCloudinaryImageUpload(pdfUrl)) {
+        setViewerMode('cloudinary-img');
+      } else {
+        setViewerMode('google');
+      }
+    } else {
+      setViewerMode('google');
+    }
+  };
+
+  const handleRetryViewer = () => {
+    setIframeLoading(true);
+    setIframeError(false);
+    // Force re-render by toggling mode
+    const current = viewerMode;
+    setViewerMode('');
+    setTimeout(() => setViewerMode(current), 100);
+  };
+
+  const viewerLabel = viewerMode === 'google' 
+    ? 'Google Viewer' 
+    : viewerMode === 'native' 
+    ? 'Native Browser' 
+    : 'Cloudinary Image';
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto md:overflow-hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-0 md:p-4 lg:p-6 transition-all duration-300">
@@ -109,9 +172,18 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
             <div className="h-11 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 shrink-0">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-indigo-400" />
-                Penampil Berkas PDF
+                {viewerLabel}
               </span>
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSwitchViewer}
+                  className="text-[11px] font-bold text-slate-400 hover:text-white flex items-center gap-1 transition-colors bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg border border-slate-700/60"
+                  title="Ganti mode viewer"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span className="hidden sm:inline">Ganti Viewer</span>
+                </button>
                 <a 
                   href={openInNewTabUrl}
                   target="_blank"
@@ -127,7 +199,8 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
             {/* Embedded PDF / Image Viewer */}
             <div className="flex-1 bg-slate-800 flex flex-col items-center justify-center relative overflow-hidden p-2 sm:p-3">
               {pdfUrl ? (
-                isCloudinaryImage && viewMode === 'auto' ? (
+                viewerMode === 'cloudinary-img' && cloudPageImageUrl ? (
+                  /* Cloudinary Image per-page viewer (only for /image/upload/) */
                   <div className="w-full h-full flex flex-col items-center justify-between overflow-auto p-2 sm:p-3 space-y-2">
                     <div className="flex-1 flex items-center justify-center w-full min-h-0">
                       <img
@@ -160,40 +233,79 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
                       </button>
                     </div>
                   </div>
-                ) : viewMode === 'google' ? (
-                  <iframe
-                    src={googleViewerUrl}
-                    title="Preview PDF via Google Viewer"
-                    className="w-full h-full border-none bg-white"
-                    loading="lazy"
-                  />
-                ) : (
+                ) : viewerMode === 'google' ? (
+                  /* Google Docs Viewer — primary viewer for Cloudinary raw URLs */
+                  <div className="w-full h-full relative">
+                    {iframeLoading && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 z-10 space-y-3">
+                        <div className="w-8 h-8 border-3 border-indigo-300 border-t-indigo-600 rounded-full animate-spin"></div>
+                        <p className="text-slate-400 text-xs font-medium">Memuat pratinjau dokumen...</p>
+                      </div>
+                    )}
+                    {iframeError && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 z-10 space-y-4">
+                        <div className="bg-rose-500/20 p-4 rounded-full">
+                          <AlertTriangle className="w-8 h-8 text-rose-400" />
+                        </div>
+                        <p className="text-sm font-bold text-slate-300">Gagal memuat pratinjau</p>
+                        <p className="text-xs text-slate-500 max-w-xs text-center">Google Viewer mungkin tidak dapat mengakses file ini. Coba ganti mode viewer atau buka di tab baru.</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleRetryViewer}
+                            className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            Coba Lagi
+                          </button>
+                          <button
+                            onClick={handleSwitchViewer}
+                            className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                          >
+                            Ganti Viewer
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    <iframe
+                      src={googleViewerUrl}
+                      title="Preview PDF via Google Viewer"
+                      className="w-full h-full border-none bg-white rounded-lg"
+                      loading="lazy"
+                      onLoad={() => setIframeLoading(false)}
+                      onError={() => { setIframeLoading(false); setIframeError(true); }}
+                    />
+                  </div>
+                ) : viewerMode === 'native' ? (
+                  /* Native browser PDF viewer */
                   <object
                     data={directPdfUrl}
                     type="application/pdf"
-                    className="w-full h-full border-none bg-slate-800"
+                    className="w-full h-full border-none bg-slate-800 rounded-lg"
                   >
-                    <iframe
-                      src={directPdfUrl}
-                      title="Preview PDF Native"
-                      className="w-full h-full border-none bg-slate-800"
-                    >
-                      <div className="text-center p-6 text-slate-300 space-y-3">
-                        <FileText className="w-12 h-12 mx-auto text-indigo-400" />
-                        <p className="text-sm font-semibold">Pratinjau PDF tidak dapat dimuat otomatis.</p>
+                    <div className="w-full h-full flex flex-col items-center justify-center text-center p-6 text-slate-300 space-y-3">
+                      <FileText className="w-12 h-12 mx-auto text-indigo-400" />
+                      <p className="text-sm font-semibold">Pratinjau PDF tidak dapat dimuat.</p>
+                      <p className="text-xs text-slate-500 max-w-xs">Browser Anda mungkin tidak mendukung pratinjau PDF langsung, atau file memerlukan autentikasi.</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setViewerMode('google')}
+                          className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          Coba Google Viewer
+                        </button>
                         <a
                           href={pdfUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition-all"
                         >
                           <ExternalLink className="w-4 h-4" />
-                          <span>Buka / Unduh Berkas PDF</span>
+                          <span>Buka / Unduh</span>
                         </a>
                       </div>
-                    </iframe>
+                    </div>
                   </object>
-                )
+                ) : null
               ) : (
                 <div className="text-center p-6 text-slate-400">
                   <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />

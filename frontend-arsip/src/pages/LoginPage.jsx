@@ -32,7 +32,7 @@ export default function LoginPage() {
             Arsip Modul Pembelajaran
           </h1>
           <p className="text-sm text-slate-400 mt-1.5">
-            Sistem Manajemen Perangkat Pembelajaran SMK
+            SMK NU Donomulyo — Sistem Manajemen Perangkat Pembelajaran
           </p>
         </div>
 
