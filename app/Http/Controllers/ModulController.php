@@ -54,7 +54,10 @@ class ModulController extends Controller
             'judul' => 'required|string|max:255',
             'mapel_id' => 'required|exists:mapels,id',
             'jenis_perangkat' => 'required|string|max:100',
-            'file_pdf' => 'required|mimes:pdf|max:10240', 
+            'file_pdf' => 'required|mimes:pdf|max:10240',
+            'tahun_ajaran' => 'nullable|string|max:20',
+            'kelas' => 'nullable|string|max:10',
+            'jurusan' => 'nullable|string|max:50',
         ]);
 
         $file = $request->file('file_pdf');
@@ -89,6 +92,32 @@ class ModulController extends Controller
         }
 
         $isAdmin = in_array(Auth::user()->role, ['admin', 'pengawas']);
+        $jurusan = $request->jurusan;
+
+        // Jika jurusan = 'semua', buat 3 record (TKR, DKV, LPKC)
+        if ($jurusan === 'semua') {
+            $jurusanList = ['TKR', 'DKV', 'LPKC'];
+            $createdModuls = [];
+
+            foreach ($jurusanList as $j) {
+                $createdModuls[] = Modul::create([
+                    'user_id' => Auth::id(),
+                    'mapel_id' => $request->mapel_id,
+                    'judul' => $request->judul,
+                    'jenis_perangkat' => $request->jenis_perangkat,
+                    'file_pdf_path' => $path,
+                    'status' => $isAdmin ? 'acc' : 'pending',
+                    'tahun_ajaran' => $request->tahun_ajaran,
+                    'kelas' => $request->kelas,
+                    'jurusan' => $j,
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Dokumen berhasil diunggah ke semua jurusan!',
+                'data' => $createdModuls
+            ], 201);
+        }
 
         $modul = Modul::create([
             'user_id' => Auth::id(),
@@ -97,6 +126,9 @@ class ModulController extends Controller
             'jenis_perangkat' => $request->jenis_perangkat,
             'file_pdf_path' => $path,
             'status' => $isAdmin ? 'acc' : 'pending',
+            'tahun_ajaran' => $request->tahun_ajaran,
+            'kelas' => $request->kelas,
+            'jurusan' => $jurusan,
         ]);
 
         return response()->json([

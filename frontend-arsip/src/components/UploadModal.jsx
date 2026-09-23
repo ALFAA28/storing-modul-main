@@ -18,11 +18,13 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
   const [mapels, setMapels] = useState([]);
   const [jenisList, setJenisList] = useState([]);
 
+  const [tahunAjaran, setTahunAjaran] = useState('2025/2026');
+  const [kelas, setKelas] = useState('');
+  const [jurusan, setJurusan] = useState('');
+
   // State untuk Tambah Mapel Baru
   const [showAddMapel, setShowAddMapel] = useState(false);
   const [newMapelNama, setNewMapelNama] = useState('');
-  const [newMapelTingkat, setNewMapelTingkat] = useState('10');
-  const [newMapelJurusan, setNewMapelJurusan] = useState('');
   const [savingMapel, setSavingMapel] = useState(false);
   const [mapelError, setMapelError] = useState('');
 
@@ -70,6 +72,10 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
         
         const rawJenis = (editData.jenis_perangkat || editData.jenis || '').toLowerCase();
         setJenis(rawJenis);
+        
+        setTahunAjaran(editData.tahun_ajaran || '2025/2026');
+        setKelas(editData.kelas || '');
+        setJurusan(editData.jurusan || '');
 
         setFile(null);
         setError('');
@@ -78,6 +84,9 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
         setJudul('');
         setMapelId('');
         setJenis('');
+        setTahunAjaran('2025/2026');
+        setKelas('');
+        setJurusan('');
         setFile(null);
         setError('');
         setSuccess(false);
@@ -142,17 +151,12 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
     try {
       const payload = {
         nama_mapel: newMapelNama.trim(),
-        tingkat_kelas: newMapelTingkat,
       };
-      if (newMapelJurusan) {
-        payload.jurusan = newMapelJurusan;
-      }
       const res = await mapelService.createMapel(payload);
       const created = res.data;
       setMapels(prev => [...prev, created]);
       setMapelId(String(created.id));
       setNewMapelNama('');
-      setNewMapelJurusan('');
       setShowAddMapel(false);
     } catch (err) {
       setMapelError(err.response?.data?.message || 'Gagal menambahkan mata pelajaran.');
@@ -177,6 +181,18 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
       setError('Silakan pilih Jenis Perangkat.');
       return;
     }
+    if (!tahunAjaran) {
+      setError('Tahun Ajaran wajib diisi.');
+      return;
+    }
+    if (!kelas) {
+      setError('Silakan pilih Kelas.');
+      return;
+    }
+    if (!jurusan) {
+      setError('Silakan pilih Jurusan.');
+      return;
+    }
     if (!isEdit && !file) {
       setError('Wajib mengunggah file perangkat pembelajaran (.pdf).');
       return;
@@ -189,6 +205,9 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
       formData.append('judul', judul.trim());
       formData.append('mapel_id', mapelId);
       formData.append('jenis_perangkat', jenis.toLowerCase());
+      formData.append('tahun_ajaran', tahunAjaran);
+      formData.append('kelas', kelas);
+      formData.append('jurusan', jurusan);
       if (file) {
         formData.append('file_pdf', file);
       }
@@ -204,6 +223,9 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
         setJudul('');
         setMapelId('');
         setJenis('');
+        setTahunAjaran('2025/2026');
+        setKelas('');
+        setJurusan('');
         setFile(null);
         setSuccess(false);
         onUploadSuccess();
@@ -301,27 +323,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
                     placeholder="Nama Mapel (misal: Bahasa Jawa)"
                     className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs placeholder-slate-400 focus:outline-none focus:border-indigo-500"
                   />
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={newMapelTingkat}
-                      onChange={(e) => setNewMapelTingkat(e.target.value)}
-                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-xs focus:outline-none focus:border-indigo-500"
-                    >
-                      <option value="10">Kelas 10</option>
-                      <option value="11">Kelas 11</option>
-                      <option value="12">Kelas 12</option>
-                      <option value="Umum">Semua Kelas</option>
-                    </select>
-                    <select
-                      value={newMapelJurusan}
-                      onChange={(e) => setNewMapelJurusan(e.target.value)}
-                      className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-xs focus:outline-none focus:border-indigo-500"
-                    >
-                      <option value="">Tanpa Jurusan</option>
-                      <option value="TKR">TKR</option>
-                      <option value="LPKC">LPKC</option>
-                      <option value="DKV">DKV</option>
-                    </select>
+                  <div className="flex items-center gap-2 mt-2">
                   </div>
                   <button
                     type="button"
@@ -342,7 +344,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
                   <option value="">-- Pilih Mapel --</option>
                   {mapels.map((opt) => (
                     <option key={opt.id} value={opt.id}>
-                      {opt.nama_mapel} (Kelas {opt.tingkat_kelas})
+                      {opt.nama_mapel}
                     </option>
                   ))}
                 </select>
@@ -369,6 +371,54 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
                     </option>
                   );
                 })}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                Tahun Ajaran <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={tahunAjaran}
+                onChange={(e) => setTahunAjaran(e.target.value)}
+                disabled={loading || success}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                Kelas <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={kelas}
+                onChange={(e) => setKelas(e.target.value)}
+                disabled={loading || success}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all appearance-none cursor-pointer"
+              >
+                <option value="">-- Pilih Kelas --</option>
+                <option value="10">Kelas 10</option>
+                <option value="11">Kelas 11</option>
+                <option value="12">Kelas 12</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                Jurusan <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={jurusan}
+                onChange={(e) => setJurusan(e.target.value)}
+                disabled={loading || success}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all appearance-none cursor-pointer"
+              >
+                <option value="">-- Pilih Jurusan --</option>
+                <option value="TKR">TKR</option>
+                <option value="DKV">DKV</option>
+                <option value="LPKC">LPKC</option>
+                <option value="semua">Semua Jurusan</option>
               </select>
             </div>
           </div>

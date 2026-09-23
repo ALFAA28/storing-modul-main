@@ -28,12 +28,11 @@ export default function KelolaMasterData() {
   const [mapels, setMapels] = useState([]);
   const [loadingMapel, setLoadingMapel] = useState(true);
   const [searchMapel, setSearchMapel] = useState('');
-  const [filterTingkat, setFilterTingkat] = useState('');
 
   // Mapel Modals
   const [isMapelModalOpen, setIsMapelModalOpen] = useState(false);
   const [editingMapel, setEditingMapel] = useState(null);
-  const [mapelForm, setMapelForm] = useState({ nama_mapel: '', tingkat_kelas: '10' });
+  const [mapelForm, setMapelForm] = useState({ nama_mapel: '' });
   const [savingMapel, setSavingMapel] = useState(false);
   const [mapelError, setMapelError] = useState('');
 
@@ -106,7 +105,7 @@ export default function KelolaMasterData() {
   // ==========================================
   const handleOpenAddMapel = () => {
     setEditingMapel(null);
-    setMapelForm({ nama_mapel: '', tingkat_kelas: '10' });
+    setMapelForm({ nama_mapel: '' });
     setMapelError('');
     setIsMapelModalOpen(true);
   };
@@ -115,7 +114,6 @@ export default function KelolaMasterData() {
     setEditingMapel(mapel);
     setMapelForm({
       nama_mapel: mapel.nama_mapel,
-      tingkat_kelas: String(mapel.tingkat_kelas),
     });
     setMapelError('');
     setIsMapelModalOpen(true);
@@ -133,13 +131,11 @@ export default function KelolaMasterData() {
       if (editingMapel) {
         await mapelService.updateMapel(editingMapel.id, {
           nama_mapel: mapelForm.nama_mapel.trim(),
-          tingkat_kelas: mapelForm.tingkat_kelas,
         });
         showToast('success', `Mata pelajaran "${mapelForm.nama_mapel}" berhasil diperbarui!`);
       } else {
         await mapelService.createMapel({
           nama_mapel: mapelForm.nama_mapel.trim(),
-          tingkat_kelas: mapelForm.tingkat_kelas,
         });
         showToast('success', `Mata pelajaran "${mapelForm.nama_mapel}" berhasil ditambahkan!`);
       }
@@ -169,18 +165,12 @@ export default function KelolaMasterData() {
 
   // Filtered Mapels
   const filteredMapels = mapels.filter((m) => {
-    const matchesSearch = (m.nama_mapel || '').toLowerCase().includes(searchMapel.toLowerCase());
-    const matchesTingkat = filterTingkat ? String(m.tingkat_kelas) === String(filterTingkat) : true;
-    return matchesSearch && matchesTingkat;
+    return (m.nama_mapel || '').toLowerCase().includes(searchMapel.toLowerCase());
   });
 
   // Mapel Stats
   const mapelStats = {
     total: mapels.length,
-    k10: mapels.filter((m) => String(m.tingkat_kelas) === '10').length,
-    k11: mapels.filter((m) => String(m.tingkat_kelas) === '11').length,
-    k12: mapels.filter((m) => String(m.tingkat_kelas) === '12').length,
-    umum: mapels.filter((m) => !['10', '11', '12'].includes(String(m.tingkat_kelas))).length,
   };
 
   // ==========================================
@@ -262,21 +252,7 @@ export default function KelolaMasterData() {
     );
   });
 
-  const getTingkatBadge = (tingkat) => {
-    const t = String(tingkat);
-    if (t === '10') {
-      return <span className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">Kelas 10</span>;
-    }
-    if (t === '11') {
-      return <span className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">Kelas 11</span>;
-    }
-    if (t === '12') {
-      return <span className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">Kelas 12</span>;
-    }
-    return <span className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">{t === 'Umum' ? 'Semua Kelas' : `Kelas ${t}`}</span>;
-  };
-
-  return (
+  // Filtered Jenis
     <div className="space-y-6">
       
       {/* Toast Notification Alert */}
@@ -375,7 +351,7 @@ export default function KelolaMasterData() {
         <div className="space-y-6">
           
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="glass-card p-4 rounded-2xl border border-slate-200 shadow-premium flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold text-slate-450 uppercase tracking-wider">Total Mapel</p>
@@ -383,36 +359,6 @@ export default function KelolaMasterData() {
               </div>
               <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
                 <BookOpen className="w-5 h-5" />
-              </div>
-            </div>
-
-            <div className="glass-card p-4 rounded-2xl border border-slate-200 shadow-premium flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold text-slate-450 uppercase tracking-wider">Kelas 10</p>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-blue-600 mt-0.5">{mapelStats.k10}</h3>
-              </div>
-              <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
-                <GraduationCap className="w-5 h-5" />
-              </div>
-            </div>
-
-            <div className="glass-card p-4 rounded-2xl border border-slate-200 shadow-premium flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold text-slate-450 uppercase tracking-wider">Kelas 11</p>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-indigo-600 mt-0.5">{mapelStats.k11}</h3>
-              </div>
-              <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
-                <GraduationCap className="w-5 h-5" />
-              </div>
-            </div>
-
-            <div className="glass-card p-4 rounded-2xl border border-slate-200 shadow-premium flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold text-slate-450 uppercase tracking-wider">Kelas 12</p>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-purple-600 mt-0.5">{mapelStats.k12}</h3>
-              </div>
-              <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
-                <GraduationCap className="w-5 h-5" />
               </div>
             </div>
           </div>
@@ -442,19 +388,6 @@ export default function KelolaMasterData() {
                     className="w-full pl-9 pr-4 py-2 bg-white rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
-
-                {/* Filter Tingkat */}
-                <select
-                  value={filterTingkat}
-                  onChange={(e) => setFilterTingkat(e.target.value)}
-                  className="px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs font-medium text-slate-600 focus:outline-none focus:border-indigo-500 cursor-pointer"
-                >
-                  <option value="">Semua Tingkat</option>
-                  <option value="10">Kelas 10</option>
-                  <option value="11">Kelas 11</option>
-                  <option value="12">Kelas 12</option>
-                  <option value="Umum">Umum / Semua</option>
-                </select>
 
                 {/* Tambah Button */}
                 <button
@@ -492,7 +425,6 @@ export default function KelolaMasterData() {
                     <tr className="bg-slate-50/60 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
                       <th className="py-3.5 px-6 w-16">No</th>
                       <th className="py-3.5 px-6">Nama Mata Pelajaran</th>
-                      <th className="py-3.5 px-6">Tingkat Kelas</th>
                       <th className="py-3.5 px-6">Tanggal Penambahan</th>
                       <th className="py-3.5 px-6 text-center w-32">Aksi</th>
                     </tr>
@@ -510,9 +442,6 @@ export default function KelolaMasterData() {
                             </div>
                             <span>{item.nama_mapel}</span>
                           </div>
-                        </td>
-                        <td className="py-3.5 px-6">
-                          {getTingkatBadge(item.tingkat_kelas)}
                         </td>
                         <td className="py-3.5 px-6 text-slate-450 text-[11px]">
                           {item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID', {
@@ -733,23 +662,6 @@ export default function KelolaMasterData() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                  Tingkat Kelas <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  value={mapelForm.tingkat_kelas}
-                  onChange={(e) => setMapelForm({ ...mapelForm, tingkat_kelas: e.target.value })}
-                  disabled={savingMapel}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer"
-                >
-                  <option value="10">Kelas 10 (Fase E)</option>
-                  <option value="11">Kelas 11 (Fase F)</option>
-                  <option value="12">Kelas 12 (Fase F Lanjutan)</option>
-                  <option value="Umum">Semua Kelas / Umum</option>
-                </select>
-              </div>
-
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
@@ -784,7 +696,7 @@ export default function KelolaMasterData() {
             <div className="text-center space-y-1">
               <h3 className="text-base font-bold text-slate-800">Hapus Mata Pelajaran?</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Apakah Anda yakin ingin menghapus mata pelajaran <strong>"{deleteTargetMapel.nama_mapel}"</strong> (Kelas {deleteTargetMapel.tingkat_kelas})?
+                Apakah Anda yakin ingin menghapus mata pelajaran <strong>"{deleteTargetMapel.nama_mapel}"</strong>?
               </p>
               <p className="text-[11px] text-rose-600 font-bold pt-1">
                 Perhatian: Modul yang terhubung dengan mata pelajaran ini mungkin terpengaruh.

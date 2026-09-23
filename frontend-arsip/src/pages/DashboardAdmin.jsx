@@ -3,25 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FileText, Search, ShieldAlert, CheckCircle, Clock, Eye, AlertCircle, RefreshCw, Trash2, Edit3, Plus, Layers, FolderOpen, Folder, ChevronRight, Home, LayoutList, FolderTree } from 'lucide-react';
 import { modulService, jenisPerangkatService, mapelService } from '../services/api';
 
-// ============================================================
-// DAFTAR MAPEL KHUSUS YANG PUNYA SUBFOLDER JURUSAN
-// Mapel ini akan memiliki struktur: Mapel → Jurusan → Kelas → File
-// ============================================================
-const MAPEL_JURUSAN_LIST = [
-  'bahasa indonesia', 'b. indo', 'b.indo',
-  'bahasa inggris', 'b. ing', 'b.ing', 'b. inggris',
-  'matematika', 'mtk',
-];
-
-const JURUSAN_LIST = ['TKR', 'LPKC', 'DKV'];
-const KELAS_LIST = ['10', '11', '12'];
-
-function isMapelJurusan(namaMapel) {
-  if (!namaMapel) return false;
-  const lower = namaMapel.toLowerCase().trim();
-  return MAPEL_JURUSAN_LIST.some(m => lower.includes(m));
-}
-
 export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdit, onOpenUpload }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -126,130 +107,73 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
   });
 
   // ==========================================================
-  // FOLDER VIEW LOGIC
+  // FOLDER VIEW LOGIC (Tahun Ajaran -> Jurusan -> Kelas -> Mapel -> File)
   // ==========================================================
 
-  // Group moduls by mapel name (unique mapel names)
-  const mapelGroups = useMemo(() => {
-    const groups = {};
-    moduls.forEach(m => {
-      const mapelName = m.mapel || 'Tanpa Mapel';
-      if (!groups[mapelName]) {
-        groups[mapelName] = [];
-      }
-      groups[mapelName].push(m);
-    });
-    return groups;
-  }, [moduls]);
-
-  // Get unique mapel names sorted
-  const uniqueMapels = useMemo(() => {
-    return Object.keys(mapelGroups).sort((a, b) => a.localeCompare(b));
-  }, [mapelGroups]);
-
-  // Determine what's shown at each folder level
   const getFolderContents = () => {
+    // folderPath = [Tahun, Jurusan, Kelas, Mapel]
+    
     if (folderPath.length === 0) {
-      // ROOT: show list of Mapel folders
-      return {
-        level: 'mapel',
-        folders: uniqueMapels.map(name => ({
-          name,
-          count: mapelGroups[name]?.length || 0,
-          hasJurusan: isMapelJurusan(name),
-        })),
-        files: [],
-      };
+      // LEVEL 0: Tahun Ajaran
+      const tahunSet = new Set(moduls.map(m => m.tahun_ajaran || 'Tanpa Tahun'));
+      const folders = Array.from(tahunSet).sort().map(tahun => {
+        return {
+          name: tahun,
+          count: moduls.filter(m => (m.tahun_ajaran || 'Tanpa Tahun') === tahun).length,
+        };
+      });
+      return { level: 'tahun_ajaran', folders, files: [] };
     }
 
-    const selectedMapel = folderPath[0];
-    const mapelModuls = mapelGroups[selectedMapel] || [];
-    const hasJurusan = isMapelJurusan(selectedMapel);
+    const selectedTahun = folderPath[0];
+    const modulsInTahun = moduls.filter(m => (m.tahun_ajaran || 'Tanpa Tahun') === selectedTahun);
 
-    if (hasJurusan) {
-      // Mapel Khusus: Mapel → Jurusan → Kelas → Files
-      if (folderPath.length === 1) {
-        // Show Jurusan folders
-        // Get unique jurusans from mapels data
-        const jurusanSet = new Set();
-        mapelsList.forEach(mp => {
-          if (mp.nama_mapel === selectedMapel && mp.jurusan) {
-            jurusanSet.add(mp.jurusan);
-          }
-        });
-        // Also add default jurusans if none found
-        const jurusans = jurusanSet.size > 0 
-          ? [...jurusanSet].sort() 
-          : JURUSAN_LIST;
-        
+    if (folderPath.length === 1) {
+      // LEVEL 1: Jurusan
+      const jurusanSet = new Set(modulsInTahun.map(m => m.jurusan || 'Tanpa Jurusan'));
+      const folders = Array.from(jurusanSet).sort().map(jurusan => {
         return {
-          level: 'jurusan',
-          folders: jurusans.map(j => {
-            const count = mapelModuls.filter(m => {
-              const mapelData = mapelsList.find(mp => String(mp.id) === String(m.mapel_id));
-              return mapelData?.jurusan === j;
-            }).length;
-            return { name: j, count };
-          }),
-          files: [],
+          name: jurusan,
+          count: modulsInTahun.filter(m => (m.jurusan || 'Tanpa Jurusan') === jurusan).length,
         };
-      }
-
-      if (folderPath.length === 2) {
-        // Show Kelas folders within Jurusan
-        const selectedJurusan = folderPath[1];
-        return {
-          level: 'kelas',
-          folders: KELAS_LIST.map(k => {
-            const count = mapelModuls.filter(m => {
-              const mapelData = mapelsList.find(mp => String(mp.id) === String(m.mapel_id));
-              return mapelData?.jurusan === selectedJurusan && mapelData?.tingkat_kelas === k;
-            }).length;
-            return { name: `Kelas ${k}`, kelas: k, count };
-          }),
-          files: [],
-        };
-      }
-
-      if (folderPath.length === 3) {
-        // Show files for specific Jurusan + Kelas
-        const selectedJurusan = folderPath[1];
-        const selectedKelas = folderPath[2].replace('Kelas ', '');
-        const files = mapelModuls.filter(m => {
-          const mapelData = mapelsList.find(mp => String(mp.id) === String(m.mapel_id));
-          return mapelData?.jurusan === selectedJurusan && mapelData?.tingkat_kelas === selectedKelas;
-        });
-        return { level: 'files', folders: [], files };
-      }
-    } else {
-      // Mapel Default: Mapel → Kelas → Files
-      if (folderPath.length === 1) {
-        // Show Kelas folders
-        return {
-          level: 'kelas',
-          folders: KELAS_LIST.map(k => {
-            const count = mapelModuls.filter(m => {
-              const mapelData = mapelsList.find(mp => String(mp.id) === String(m.mapel_id));
-              return mapelData?.tingkat_kelas === k;
-            }).length;
-            return { name: `Kelas ${k}`, kelas: k, count };
-          }),
-          files: [],
-        };
-      }
-
-      if (folderPath.length === 2) {
-        // Show files for specific Kelas
-        const selectedKelas = folderPath[1].replace('Kelas ', '');
-        const files = mapelModuls.filter(m => {
-          const mapelData = mapelsList.find(mp => String(mp.id) === String(m.mapel_id));
-          return mapelData?.tingkat_kelas === selectedKelas;
-        });
-        return { level: 'files', folders: [], files };
-      }
+      });
+      return { level: 'jurusan', folders, files: [] };
     }
 
-    return { level: 'unknown', folders: [], files: [] };
+    const selectedJurusan = folderPath[1];
+    const modulsInJurusan = modulsInTahun.filter(m => (m.jurusan || 'Tanpa Jurusan') === selectedJurusan);
+
+    if (folderPath.length === 2) {
+      // LEVEL 2: Kelas
+      const kelasSet = new Set(modulsInJurusan.map(m => m.kelas || 'Tanpa Kelas'));
+      const folders = Array.from(kelasSet).sort().map(kelas => {
+        return {
+          name: kelas,
+          count: modulsInJurusan.filter(m => (m.kelas || 'Tanpa Kelas') === kelas).length,
+        };
+      });
+      return { level: 'kelas', folders, files: [] };
+    }
+
+    const selectedKelas = folderPath[2];
+    const modulsInKelas = modulsInJurusan.filter(m => (m.kelas || 'Tanpa Kelas') === selectedKelas);
+
+    if (folderPath.length === 3) {
+      // LEVEL 3: Mapel
+      const mapelSet = new Set(modulsInKelas.map(m => m.mapel || 'Tanpa Mapel'));
+      const folders = Array.from(mapelSet).sort().map(mapel => {
+        return {
+          name: mapel,
+          count: modulsInKelas.filter(m => (m.mapel || 'Tanpa Mapel') === mapel).length,
+        };
+      });
+      return { level: 'mapel', folders, files: [] };
+    }
+
+    const selectedMapel = folderPath[3];
+    const files = modulsInKelas.filter(m => (m.mapel || 'Tanpa Mapel') === selectedMapel);
+
+    return { level: 'files', folders: [], files };
   };
 
   const folderContents = getFolderContents();

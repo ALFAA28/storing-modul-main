@@ -6,6 +6,7 @@ import SSOCallback from './pages/SSOCallback';
 import DashboardGuru from './pages/DashboardGuru';
 import DashboardAdmin from './pages/DashboardAdmin';
 import KelolaMasterData from './pages/KelolaMasterData';
+import KelolaAkun from './pages/KelolaAkun';
 import UploadModal from './components/UploadModal';
 import ReviewModal from './components/ReviewModal';
 import { authService } from './services/api';
@@ -156,6 +157,23 @@ export default function App() {
         <Route 
           path="/admin/kelola-master" 
           element={<Navigate to="/admin/master-data" replace />} 
+        />
+
+        {/* Admin Kelola Akun Route */}
+        <Route 
+          path="/admin/kelola-akun" 
+          element={
+            <RoleProtectedRoute allowedRoles={['admin']} currentRole={role}>
+              <Layout 
+                role={role} 
+                user={user}
+                onUploadClick={handleOpenNewUpload}
+                onLogout={handleLogout}
+              >
+                <KelolaAkun />
+              </Layout>
+            </RoleProtectedRoute>
+          } 
         />
 
         {/* Fallback Redirection */}

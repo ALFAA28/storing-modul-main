@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ModulController;
 use App\Http\Controllers\MapelController;
 use App\Http\Controllers\JenisPerangkatController;
+use App\Http\Controllers\UserController;
 
 // SSO Login (forwards to Absensi backend)
 Route::post('/login', [AuthController::class, 'login']);
@@ -53,4 +54,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/jenis-perangkat/{id}/update', [JenisPerangkatController::class, 'update']);
     Route::delete('/jenis-perangkat/{id}', [JenisPerangkatController::class, 'destroy']);
     Route::post('/jenis-perangkat/{id}/delete', [JenisPerangkatController::class, 'destroy']);
+
+    // API Kelola Akun (Admin Only)
+    Route::get('/users/pending', [UserController::class, 'pendingUsers']);
+    Route::get('/users/approved', [UserController::class, 'approvedUsers']);
+    Route::post('/users/{id}/approve', [UserController::class, 'approve']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    Route::post('/users/{id}/delete', [UserController::class, 'destroy']);
 });

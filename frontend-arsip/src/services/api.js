@@ -180,3 +180,21 @@ export const jenisPerangkatService = {
     return response.data;
   }
 };
+
+// =============================================
+// USER SERVICES (Admin - Kelola Akun)
+// =============================================
+export const userService = {
+  getPendingUsers: async () => {
+    const response = await API.get('/admin/users');
+    return response.data;
+  },
+  approveUser: async (id) => {
+    const response = await API.post(`/admin/users/${id}/approve`);
+    return response.data;
+  },
+  deleteUser: async (id) => {
+    const response = await API.delete(`/admin/users/${id}`);
+    return response.data;
+  }
+};

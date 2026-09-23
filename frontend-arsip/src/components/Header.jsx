@@ -31,7 +31,7 @@ export default function Header({ role, user, toggleSidebar, onLogout }) {
             {role === 'guru' ? 'Workspace Guru' : 'Workspace Admin & Pengawas'}
           </h2>
           <p className="text-[11px] text-slate-500 hidden sm:block">
-            Arsip Modul Pembelajaran — SMK NU Donomulyo
+            Arsip Perangkat Pembelajaran — SMK NU Donomulyo
           </p>
         </div>
       </div>

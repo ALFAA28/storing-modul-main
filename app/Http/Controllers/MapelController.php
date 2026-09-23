@@ -25,14 +25,11 @@ class MapelController extends Controller
     {
         $request->validate([
             'nama_mapel' => 'required|string|max:255',
-            'tingkat_kelas' => 'required|string|max:50',
-            'jurusan' => 'nullable|string|max:100',
         ]);
 
         $mapel = Mapel::create([
             'nama_mapel' => $request->nama_mapel,
-            'tingkat_kelas' => $request->tingkat_kelas,
-            'jurusan' => $request->jurusan,
+            'tingkat_kelas' => $request->tingkat_kelas ?? '-',
         ]);
 
         return response()->json([
@@ -48,15 +45,11 @@ class MapelController extends Controller
     {
         $request->validate([
             'nama_mapel' => 'required|string|max:255',
-            'tingkat_kelas' => 'required|string|max:50',
-            'jurusan' => 'nullable|string|max:100',
         ]);
 
         $mapel = Mapel::findOrFail($id);
         $mapel->update([
             'nama_mapel' => $request->nama_mapel,
-            'tingkat_kelas' => $request->tingkat_kelas,
-            'jurusan' => $request->jurusan,
         ]);
 
         return response()->json([

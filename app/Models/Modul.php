@@ -36,10 +36,6 @@ class Modul extends Model
 
     public function getJenisAttribute()
     {
-        $jp = strtolower($this->jenis_perangkat ?? '');
-        if ($jp === 'modul') return 'Modul';
-        if ($jp === 'prota') return 'Prota';
-        if ($jp === 'promes') return 'Promes';
         return ucwords(str_replace(['_', '-'], ' ', $this->jenis_perangkat ?? ''));
     }
 

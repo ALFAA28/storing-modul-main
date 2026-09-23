@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, LayoutDashboard, FileText, UploadCloud, Users, Layers } from 'lucide-react';
+import { BookOpen, LayoutDashboard, FileText, UploadCloud, Users, Layers, UserCheck } from 'lucide-react';
 
 export default function Sidebar({ role, user, onUploadClick }) {
   const location = useLocation();
@@ -15,7 +15,7 @@ export default function Sidebar({ role, user, onUploadClick }) {
           isActive: location.pathname === '/guru' && !location.search.includes('tab=list')
         },
         { 
-          name: 'Modul Saya', 
+          name: 'Perangkat Saya', 
           path: '/guru?tab=list', 
           icon: FileText,
           isActive: location.pathname === '/guru' && location.search.includes('tab=list')
@@ -29,7 +29,7 @@ export default function Sidebar({ role, user, onUploadClick }) {
           isActive: location.pathname === '/admin' && !location.search.includes('tab=master')
         },
         { 
-          name: 'Data Master Modul', 
+          name: 'Data Master', 
           path: '/admin?tab=master', 
           icon: Users,
           isActive: location.pathname === '/admin' && location.search.includes('tab=master')
@@ -39,6 +39,12 @@ export default function Sidebar({ role, user, onUploadClick }) {
           path: '/admin/master-data', 
           icon: Layers,
           isActive: location.pathname.startsWith('/admin/master-data') || location.pathname.startsWith('/admin/kelola-master')
+        },
+        { 
+          name: 'Kelola Akun', 
+          path: '/admin/kelola-akun', 
+          icon: UserCheck,
+          isActive: location.pathname.startsWith('/admin/kelola-akun')
         },
       ];
 
@@ -56,7 +62,7 @@ export default function Sidebar({ role, user, onUploadClick }) {
           <BookOpen className="w-5 h-5" />
         </div>
         <div>
-          <h1 className="text-white font-bold text-sm leading-tight tracking-wide">Arsip Modul</h1>
+          <h1 className="text-white font-bold text-sm leading-tight tracking-wide">Arsip Perangkat</h1>
           <span className="text-[10px] text-slate-500 font-bold tracking-wider uppercase">SMK NU Donomulyo</span>
         </div>
       </div>
@@ -90,15 +96,17 @@ export default function Sidebar({ role, user, onUploadClick }) {
           );
         })}
 
-        <div className="pt-4">
-          <button
-            onClick={onUploadClick}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white shadow-lg shadow-indigo-600/20 hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all duration-200 cursor-pointer group"
-          >
-            <UploadCloud className="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-110" />
-            <span>Unggah Dokumen</span>
-          </button>
-        </div>
+        {isGuru && (
+          <div className="pt-4">
+            <button
+              onClick={onUploadClick}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white shadow-lg shadow-indigo-600/20 hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all duration-200 cursor-pointer group"
+            >
+              <UploadCloud className="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-110" />
+              <span>Unggah Dokumen</span>
+            </button>
+          </div>
+        )}
       </nav>
 
       {/* Footer Info - Dynamic User */}
