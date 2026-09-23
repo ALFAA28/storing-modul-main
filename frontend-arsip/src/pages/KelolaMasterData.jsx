@@ -253,6 +253,8 @@ export default function KelolaMasterData() {
   });
 
   // Filtered Jenis
+
+  return (
     <div className="space-y-6">
       
       {/* Toast Notification Alert */}
