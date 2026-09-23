@@ -67,12 +67,12 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
       
       const lowerUrl = pdfUrl.toLowerCase();
       // Determine best initial viewer mode
-      if (isCloudinaryImageUpload(pdfUrl)) {
-        setViewerMode('cloudinary-img');
-      } else if (lowerUrl.endsWith('.docx') || lowerUrl.endsWith('.doc')) {
+      if (lowerUrl.endsWith('.docx') || lowerUrl.endsWith('.doc')) {
         setViewerMode('office');
       } else if (lowerUrl.endsWith('.pdf')) {
         setViewerMode('native');
+      } else if (isCloudinaryImageUpload(pdfUrl)) {
+        setViewerMode('cloudinary-img');
       } else {
         // Fallback for raw cloudinary URLs which might be PDFs without extension
         setViewerMode('native');
@@ -110,22 +110,25 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
   const handleSwitchViewer = () => {
     setIframeLoading(true);
     setIframeError(false);
-    if (viewerMode === 'google' || viewerMode === 'office') {
-      setViewerMode('native');
-    } else if (viewerMode === 'native') {
-      if (isCloudinaryImageUpload(pdfUrl)) {
-        setViewerMode('cloudinary-img');
-      } else if (pdfUrl.toLowerCase().endsWith('.docx') || pdfUrl.toLowerCase().endsWith('.doc')) {
-        setViewerMode('office');
-      } else {
-        setViewerMode('google');
-      }
+    
+    const isDocx = pdfUrl.toLowerCase().endsWith('.docx') || pdfUrl.toLowerCase().endsWith('.doc');
+    
+    if (isDocx) {
+       // Toggle between office and google for Word documents
+       setViewerMode(prev => prev === 'office' ? 'google' : 'office');
     } else {
-      if (pdfUrl.toLowerCase().endsWith('.docx') || pdfUrl.toLowerCase().endsWith('.doc')) {
-        setViewerMode('office');
-      } else {
-        setViewerMode('google');
-      }
+       // Toggle sequence for PDFs: native -> cloudinary-img (if available) -> google -> native
+       if (viewerMode === 'native') {
+          if (isCloudinaryImageUpload(pdfUrl)) {
+             setViewerMode('cloudinary-img');
+          } else {
+             setViewerMode('google');
+          }
+       } else if (viewerMode === 'cloudinary-img') {
+          setViewerMode('google');
+       } else {
+          setViewerMode('native');
+       }
     }
   };
 
