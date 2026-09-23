@@ -16,7 +16,6 @@ export default function KelolaAkun() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEditUser, setSelectedEditUser] = useState(null);
   const [editRole, setEditRole] = useState('guru_mapel');
-  const [editNrg, setEditNrg] = useState('');
   const [editStatus, setEditStatus] = useState('active');
 
   const fetchUsers = async () => {
@@ -87,7 +86,6 @@ export default function KelolaAkun() {
   const openEditModal = (user) => {
     setSelectedEditUser(user);
     setEditRole(user.role);
-    setEditNrg(user.nrg || '');
     setEditStatus(user.status || 'pending');
     setShowEditModal(true);
   };
@@ -97,8 +95,7 @@ export default function KelolaAkun() {
     setProcessingId(selectedEditUser.id);
     try {
       await userService.updateRole(selectedEditUser.id, {
-        role: editRole,
-        nrg: editNrg
+        role: editRole
       });
       if (editStatus !== selectedEditUser.status) {
         await userService.updateStatus(selectedEditUser.id, editStatus);
@@ -116,8 +113,7 @@ export default function KelolaAkun() {
   const filteredUsers = users.filter((u) => {
     const q = searchTerm.toLowerCase();
     const matchSearch = (u.name || '').toLowerCase().includes(q) || 
-                        (u.email || '').toLowerCase().includes(q) || 
-                        (u.nrg || '').toLowerCase().includes(q);
+                        (u.email || '').toLowerCase().includes(q);
     const matchStatus = filterStatus === 'all' || u.status === filterStatus;
     return matchSearch && matchStatus;
   });
@@ -207,7 +203,7 @@ export default function KelolaAkun() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Cari nama, email, NRG..."
+                placeholder="Cari nama, email..."
                 className="w-full pl-9 pr-4 py-2 bg-white rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
@@ -252,7 +248,7 @@ export default function KelolaAkun() {
                 <tr className="bg-slate-50/60 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
                   <th className="py-3.5 px-6 w-16">No</th>
                   <th className="py-3.5 px-6">Data Guru</th>
-                  <th className="py-3.5 px-6">Role / NRG</th>
+                  <th className="py-3.5 px-6">Role / Peran</th>
                   <th className="py-3.5 px-6">Status</th>
                   <th className="py-3.5 px-6 text-center w-52">Aksi</th>
                 </tr>
@@ -278,9 +274,6 @@ export default function KelolaAkun() {
                       <div className="flex flex-col gap-1">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 w-fit">
                           {user.role === 'guru_mapel' ? 'Guru Mapel' : user.role === 'admin' ? 'Admin' : user.role}
-                        </span>
-                        <span className="text-[10px] text-slate-450 font-mono mt-0.5">
-                          NRG: {user.nrg || '-'}
                         </span>
                       </div>
                     </td>
@@ -383,19 +376,6 @@ export default function KelolaAkun() {
                   <option value="wali_kelas">Wali Kelas</option>
                   <option value="admin">Admin</option>
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  NRG (Nomor Registrasi Guru)
-                </label>
-                <input
-                  type="text"
-                  value={editNrg}
-                  onChange={(e) => setEditNrg(e.target.value)}
-                  placeholder="Masukkan NRG..."
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                />
               </div>
 
               <div>
