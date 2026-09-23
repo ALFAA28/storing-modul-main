@@ -62,11 +62,18 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
       setPage(1);
       setIframeLoading(true);
       setIframeError(false);
+      
+      const lowerUrl = pdfUrl.toLowerCase();
       // Determine best initial viewer mode
       if (isCloudinaryImageUpload(pdfUrl)) {
         setViewerMode('cloudinary-img');
+      } else if (lowerUrl.endsWith('.docx') || lowerUrl.endsWith('.doc')) {
+        setViewerMode('office');
+      } else if (lowerUrl.endsWith('.pdf')) {
+        setViewerMode('native');
       } else {
-        setViewerMode('google');
+        // Fallback for raw cloudinary URLs which might be PDFs without extension
+        setViewerMode('native');
       }
     }
   }, [doc]);
@@ -101,16 +108,22 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
   const handleSwitchViewer = () => {
     setIframeLoading(true);
     setIframeError(false);
-    if (viewerMode === 'google') {
+    if (viewerMode === 'google' || viewerMode === 'office') {
       setViewerMode('native');
     } else if (viewerMode === 'native') {
       if (isCloudinaryImageUpload(pdfUrl)) {
         setViewerMode('cloudinary-img');
+      } else if (pdfUrl.toLowerCase().endsWith('.docx') || pdfUrl.toLowerCase().endsWith('.doc')) {
+        setViewerMode('office');
       } else {
         setViewerMode('google');
       }
     } else {
-      setViewerMode('google');
+      if (pdfUrl.toLowerCase().endsWith('.docx') || pdfUrl.toLowerCase().endsWith('.doc')) {
+        setViewerMode('office');
+      } else {
+        setViewerMode('google');
+      }
     }
   };
 
@@ -125,6 +138,8 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
 
   const viewerLabel = viewerMode === 'google' 
     ? 'Google Viewer' 
+    : viewerMode === 'office'
+    ? 'Office Viewer'
     : viewerMode === 'native' 
     ? 'Native Browser' 
     : 'Cloudinary Image';
@@ -232,6 +247,24 @@ export default function ReviewModal({ isOpen, document: doc, role, onClose, onRe
                         Next ▶
                       </button>
                     </div>
+                  </div>
+                ) : viewerMode === 'office' ? (
+                  /* Microsoft Office Viewer */
+                  <div className="w-full h-full relative">
+                    {iframeLoading && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 z-10 space-y-3">
+                        <div className="w-8 h-8 border-3 border-indigo-300 border-t-indigo-600 rounded-full animate-spin"></div>
+                        <p className="text-slate-400 text-xs font-medium">Memuat pratinjau dokumen (Word)...</p>
+                      </div>
+                    )}
+                    <iframe
+                      src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(pdfUrl)}`}
+                      title="Preview Word via Office Viewer"
+                      className="w-full h-full border-none bg-white rounded-lg"
+                      loading="lazy"
+                      onLoad={() => setIframeLoading(false)}
+                      onError={() => { setIframeLoading(false); setIframeError(true); }}
+                    />
                   </div>
                 ) : viewerMode === 'google' ? (
                   /* Google Docs Viewer — primary viewer for Cloudinary raw URLs */

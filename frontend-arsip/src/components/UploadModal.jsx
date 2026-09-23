@@ -107,8 +107,11 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
   const validateAndSetFile = (selectedFile) => {
     if (!selectedFile) return;
     
-    if (selectedFile.type !== 'application/pdf' && !selectedFile.name.toLowerCase().endsWith('.pdf')) {
-      setError('Hanya berkas format PDF (.pdf) yang diperbolehkan.');
+    const isPDF = selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
+    const isDoc = selectedFile.type === 'application/msword' || selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || selectedFile.name.toLowerCase().endsWith('.doc') || selectedFile.name.toLowerCase().endsWith('.docx');
+
+    if (!isPDF && !isDoc) {
+      setError('Hanya berkas format PDF atau Word (.doc, .docx) yang diperbolehkan.');
       setFile(null);
       return;
     }
@@ -194,7 +197,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
       return;
     }
     if (!isEdit && !file) {
-      setError('Wajib mengunggah file perangkat pembelajaran (.pdf).');
+      setError('Wajib mengunggah file perangkat pembelajaran.');
       return;
     }
 
@@ -426,7 +429,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
           {/* File Upload Zone */}
           <div>
             <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-              Berkas Perangkat (Format PDF) {isEdit && <span className="text-[10px] text-slate-400 font-normal">(Opsional - biarkan kosong jika tidak ingin mengubah file)</span>}
+              Berkas Perangkat {isEdit && <span className="text-[10px] text-slate-400 font-normal">(Opsional - biarkan kosong jika tidak ingin mengubah file)</span>}
             </label>
             
             <div
@@ -446,7 +449,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf"
+                accept=".pdf,.doc,.docx"
                 onChange={handleFileChange}
                 disabled={loading || success}
                 className="hidden"
