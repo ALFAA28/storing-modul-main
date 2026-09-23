@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, FileText, Upload, AlertCircle, CheckCircle, Edit3 } from 'lucide-react';
-import { modulService, mapelService, jenisPerangkatService } from '../services/api';
+import { modulService, mapelService, jenisPerangkatService, settingsService } from '../services/api';
 
 export default function UploadModal({ isOpen, editData = null, onClose, onUploadSuccess }) {
   if (!isOpen) return null;
@@ -19,6 +19,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
   const [jenisList, setJenisList] = useState([]);
 
   const [tahunAjaran, setTahunAjaran] = useState('2025/2026');
+  const [loadingTahunAjaran, setLoadingTahunAjaran] = useState(false);
   const [kelas, setKelas] = useState('');
   const [jurusan, setJurusan] = useState('');
 
@@ -61,10 +62,23 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
     }
   };
 
+  const fetchPengaturan = async () => {
+    setLoadingTahunAjaran(true);
+    try {
+      const res = await settingsService.getActiveTahunAjaran();
+      setTahunAjaran(res.tahun_ajaran || '2025/2026');
+    } catch (err) {
+      console.warn('Gagal memuat pengaturan tahun ajaran', err);
+    } finally {
+      setLoadingTahunAjaran(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchMapels();
       fetchJenisList();
+      if (!editData) fetchPengaturan(); // only fetch global setting if new upload
 
       if (editData) {
         setJudul(editData.judul || '');
@@ -84,7 +98,7 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
         setJudul('');
         setMapelId('');
         setJenis('');
-        setTahunAjaran('2025/2026');
+        // setTahunAjaran is handled by fetchPengaturan
         setKelas('');
         setJurusan('');
         setFile(null);
@@ -380,16 +394,24 @@ export default function UploadModal({ isOpen, editData = null, onClose, onUpload
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                Tahun Ajaran <span className="text-rose-500">*</span>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Tahun Ajaran</span>
+                <span className="text-[10px] text-slate-400 font-normal normal-case">Terisi otomatis</span>
               </label>
-              <input
-                type="text"
-                value={tahunAjaran}
-                onChange={(e) => setTahunAjaran(e.target.value)}
-                disabled={loading || success}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={loadingTahunAjaran ? 'Memuat...' : tahunAjaran}
+                  readOnly
+                  disabled={loading || success || loadingTahunAjaran}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-sm font-bold text-slate-600 focus:outline-none transition-all cursor-not-allowed"
+                />
+                {loadingTahunAjaran && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                  </div>
+                )}
+              </div>
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">

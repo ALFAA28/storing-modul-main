@@ -63,4 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users/{id}/role', [UserController::class, 'updateRole']);
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    
+    // API Pengaturan
+    Route::get('/settings/tahun-ajaran', [App\Http\Controllers\SettingController::class, 'getActiveTahunAjaran']);
+    Route::put('/settings/tahun-ajaran', [App\Http\Controllers\SettingController::class, 'updateActiveTahunAjaran']);
 });

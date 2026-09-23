@@ -22,11 +22,12 @@ export default function SSOCallback() {
         const data = await authService.verifySso(token);
         const role = data.user?.role;
         
-        // Fast, silent redirect. No artificial delays.
+        // Use window.location.href to force a full app reload
+        // This ensures App.jsx remounts and reads the latest localStorage
         if (role === 'admin' || role === 'pengawas') {
-          navigate('/admin', { replace: true });
+          window.location.href = '/admin';
         } else {
-          navigate('/guru', { replace: true });
+          window.location.href = '/guru';
         }
       } catch (err) {
         setError('Gagal memverifikasi sesi. Mengarahkan kembali ke login...');

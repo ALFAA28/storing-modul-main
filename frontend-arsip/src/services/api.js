@@ -214,3 +214,16 @@ export const userService = {
     return response.data;
   }
 };
+// =============================================
+// SETTINGS SERVICES
+// =============================================
+export const settingsService = {
+  getActiveTahunAjaran: async () => {
+    const response = await API.get('/settings/tahun-ajaran');
+    return response.data;
+  },
+  updateActiveTahunAjaran: async (tahunAjaran) => {
+    const response = await API.put('/settings/tahun-ajaran', { tahun_ajaran: tahunAjaran });
+    return response.data;
+  }
+};
