@@ -50,7 +50,7 @@ const LoginPage = () => {
         </div>
         <div className="login-header">
           <h2>Arsip Perangkat Pembelajaran</h2>
-          <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>Login khusus untuk akses Arsip Modul</p>
+          <p style={{ color: '#64748b', fontSize: '14px', marginTop: '14px' }}>Login khusus untuk akses Arsip Modul</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}
