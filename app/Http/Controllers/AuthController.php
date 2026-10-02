@@ -9,8 +9,7 @@ use App\Models\User;
 class AuthController extends Controller
 {
     /**
-     * SSO Login: Forward credentials to Absensi backend,
-     * sync user locally, then issue a local Sanctum token.
+     * Local Login: Authenticate directly against the local CockroachDB database.
      */
     public function login(Request $request)
     {
@@ -19,60 +18,15 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $absensiUrl = rtrim(env('BACKEND_ABSENSI_URL', 'http://localhost:8001'), '/');
-
-        // 1. Forward login request to Absensi backend
-        try {
-            $response = Http::timeout(15)->post($absensiUrl . '/api/login', [
-                'email' => $request->email,
-                'password' => $request->password,
-                'app_source' => 'storing',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Tidak dapat terhubung ke server autentikasi. Silakan coba lagi nanti.'
-            ], 503);
-        }
-
-        // 2. If Absensi backend rejects login, forward the error
-        if (!$response->successful()) {
-            $status = $response->status();
-            $body = $response->json();
-            return response()->json([
-                'message' => $body['message'] ?? 'Login gagal.'
-            ], $status);
-        }
-
-        $absensiData = $response->json();
-        $absensiUser = $absensiData['user'] ?? [];
-
-        // 3. Map Absensi role to Arsip Modul Pembelajaran role
-        $absensiRole = $absensiUser['role'] ?? 'guru_mapel';
-        $modulRole = $this->mapRole($absensiRole);
-
-        // 4. Block roles that shouldn't access Arsip Modul Pembelajaran (e.g. sarpras)
-        if ($modulRole === null) {
-            return response()->json([
-                'message' => 'Akun Anda tidak memiliki akses ke sistem Arsip Modul Pembelajaran.'
-            ], 403);
-        }
-
-        // 5. Fetch local user (since DB is shared, they already exist)
         $localUser = User::where('email', $request->email)->first();
 
-        if (!$localUser) {
-            return response()->json(['message' => 'User tidak ditemukan di database lokal.'], 404);
-        }
-
-        // 6. Validasi Sumber Akun (Khusus Arsip Modul Pembelajaran / Admin)
-        $userApp = $localUser->app_source ?? 'absensi';
-        if ($localUser->role !== 'admin' && $userApp !== 'storing') {
+        if (!$localUser || !\Illuminate\Support\Facades\Hash::check($request->password, $localUser->password)) {
             return response()->json([
-                'message' => 'Akun ini terdaftar untuk Web Absensi dan tidak dapat digunakan pada Web Arsip Modul Pembelajaran.'
-            ], 403);
+                'message' => 'Email atau password salah.'
+            ], 401);
         }
 
-        // 7. Create local Sanctum token
+        // Create local Sanctum token
         $token = $localUser->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -83,9 +37,7 @@ class AuthController extends Controller
                 'id' => $localUser->id,
                 'name' => $localUser->name,
                 'email' => $localUser->email,
-                'role' => $modulRole,
-                'app_source' => $userApp,
-                'nrg' => $localUser->nrg,
+                'role' => $localUser->role,
             ]
         ], 200);
     }
