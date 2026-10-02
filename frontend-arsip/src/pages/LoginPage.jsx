@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaEnvelope, FaLock, FaSignInAlt, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate, Link } from 'react-router-dom';
+import { FaEnvelope, FaLock, FaSignInAlt, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import './Login.css';
 import { authService } from '../services/api';
 
@@ -49,7 +49,7 @@ const LoginPage = () => {
           <img src="/IMG_03611.png" alt="Logo SMK NU Donomulyo" className="overlapping-logo" />
         </div>
         <div className="login-header">
-          <h2>Sistem Informasi Storing Modul</h2>
+          <h2 style={{ color: '#4f46e5', fontWeight: 'bold' }}>Sistem Informasi Storing Modul</h2>
           <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>Login khusus untuk akses Arsip Modul</p>
         </div>
 
@@ -117,6 +117,15 @@ const LoginPage = () => {
           </button>
         </form>
 
+        <div className="login-link" style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px' }}>
+          Belum punya akun Storing? <Link to="/register-storing" style={{ color: '#4f46e5', textDecoration: 'none', fontWeight: 'bold' }}>Daftar di sini</Link>
+        </div>
+
+        <div className="login-link" style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px' }}>
+          <a href="https://absensi-smk-nu-donomulyo.vercel.app/login" style={{ color: '#64748b', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <FaArrowLeft /> Kembali ke Login Absensi
+          </a>
+        </div>
         <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px 0 16px 0' }} />
 
         <div style={{ textAlign: 'center', fontSize: '12px', color: '#64748b', lineHeight: '1.5' }}>
