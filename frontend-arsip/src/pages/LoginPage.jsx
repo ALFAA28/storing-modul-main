@@ -49,7 +49,7 @@ const LoginPage = () => {
           <img src="/IMG_03611.png" alt="Logo SMK NU Donomulyo" className="overlapping-logo" />
         </div>
         <div className="login-header">
-          <h2 style={{ color: '#4f46e5', fontWeight: 'bold' }}>Sistem Informasi Storing Modul</h2>
+          <h2>Sistem Informasi Storing Modul</h2>
           <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>Login khusus untuk akses Arsip Modul</p>
         </div>
 
