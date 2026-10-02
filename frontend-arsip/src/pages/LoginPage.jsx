@@ -4,7 +4,7 @@ import { FaEnvelope, FaLock, FaSignInAlt, FaEye, FaEyeSlash, FaArrowLeft } from 
 import './Login.css';
 import { authService } from '../services/api';
 
-const LoginPage = () => {
+const LoginPage = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,12 +24,17 @@ const LoginPage = () => {
 
     try {
       const data = await authService.login(email, password);
+      // Update global user state in App.jsx
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
+      
       // Determine dashboard based on role
       const user = data.user;
       if (user.role === 'admin' || user.role === 'pengawas') {
-        navigate('/admin/dashboard');
+        navigate('/admin');
       } else {
-        navigate('/guru/dashboard');
+        navigate('/guru');
       }
     } catch (err) {
       if (err.response && err.response.data && err.response.data.message) {
