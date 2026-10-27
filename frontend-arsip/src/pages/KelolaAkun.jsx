@@ -15,7 +15,7 @@ export default function KelolaAkun() {
   // Edit Modal State
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEditUser, setSelectedEditUser] = useState(null);
-  const [editRole, setEditRole] = useState('guru_mapel');
+  const [editRole, setEditRole] = useState('guru');
   const [editStatus, setEditStatus] = useState('active');
 
   const fetchUsers = async () => {
@@ -85,8 +85,8 @@ export default function KelolaAkun() {
 
   const openEditModal = (user) => {
     setSelectedEditUser(user);
-    setEditRole(user.role);
-    setEditStatus(user.status || 'pending');
+    setEditRole(['admin', 'pengawas'].includes(user.role) ? 'admin' : 'guru');
+    setEditStatus(user.status === 'active' ? 'active' : 'inactive');
     setShowEditModal(true);
   };
 
@@ -94,17 +94,19 @@ export default function KelolaAkun() {
     if (!selectedEditUser) return;
     setProcessingId(selectedEditUser.id);
     try {
-      await userService.updateRole(selectedEditUser.id, {
-        role: editRole
-      });
-      if (editStatus !== selectedEditUser.status) {
+      const currentRole = ['admin', 'pengawas'].includes(selectedEditUser.role) ? 'admin' : 'guru';
+      if (editRole !== currentRole) {
+        await userService.updateRole(selectedEditUser.id, { role: editRole });
+      }
+      const currentStatus = selectedEditUser.status === 'active' ? 'active' : 'inactive';
+      if (editStatus !== currentStatus) {
         await userService.updateStatus(selectedEditUser.id, editStatus);
       }
       showToast('success', `Data akun berhasil diperbarui!`);
       setShowEditModal(false);
       fetchUsers();
     } catch (err) {
-      showToast('error', `Gagal menyimpan perubahan.`);
+      showToast('error', err?.response?.data?.message || `Gagal menyimpan perubahan.`);
     } finally {
       setProcessingId(null);
     }
@@ -273,7 +275,7 @@ export default function KelolaAkun() {
                     <td className="py-3.5 px-6">
                       <div className="flex flex-col gap-1">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 w-fit">
-                          {user.role === 'guru_mapel' ? 'Guru Mapel' : user.role === 'admin' ? 'Admin' : user.role}
+                          {['admin', 'pengawas'].includes(user.role) ? 'Admin / Pengawas' : 'Guru'}
                         </span>
                       </div>
                     </td>
@@ -372,9 +374,8 @@ export default function KelolaAkun() {
                   onChange={(e) => setEditRole(e.target.value)}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 >
-                  <option value="guru_mapel">Guru Mata Pelajaran</option>
-                  <option value="wali_kelas">Wali Kelas</option>
-                  <option value="admin">Admin</option>
+                  <option value="guru">Guru</option>
+                  <option value="admin">Admin / Pengawas</option>
                 </select>
               </div>
 
@@ -389,7 +390,6 @@ export default function KelolaAkun() {
                 >
                   <option value="active">Aktif</option>
                   <option value="inactive">Nonaktif</option>
-                  <option value="pending">Menunggu Persetujuan</option>
                 </select>
               </div>
             </div>

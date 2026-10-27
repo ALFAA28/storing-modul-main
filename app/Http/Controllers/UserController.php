@@ -110,7 +110,7 @@ class UserController extends Controller
     public function updateRole(Request $request, $id)
     {
         $request->validate([
-            'role' => 'required|string|in:wali_kelas,guru_mapel,admin,sarpras',
+            'role' => 'required|string|in:guru,admin,pengawas',
             'nrg' => 'nullable|string|max:50'
         ]);
 
