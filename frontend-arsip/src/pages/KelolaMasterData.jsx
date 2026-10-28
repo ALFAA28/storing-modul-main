@@ -324,7 +324,7 @@ export default function KelolaMasterData() {
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-slate-800 tracking-tight sm:text-2xl">
-                Kelola Master Data
+                Data Master
               </h1>
               <p className="text-slate-500 text-xs sm:text-sm">
                 Manajemen data Mata Pelajaran (Mapel) dan Jenis Perangkat Pembelajaran Sekolah

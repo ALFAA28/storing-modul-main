@@ -380,7 +380,7 @@ export default function DashboardAdmin({ refreshTrigger, onOpenReview, onOpenEdi
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-slate-500" />
               <h2 className="text-sm font-bold text-slate-700">
-                {viewMode === 'folder' ? 'Arsip Perangkat Pembelajaran' : 'Master Data Perangkat Pembelajaran'}
+                {viewMode === 'folder' ? 'Arsip Perangkat Pembelajaran' : 'Daftar Perangkat Pembelajaran'}
               </h2>
             </div>
             

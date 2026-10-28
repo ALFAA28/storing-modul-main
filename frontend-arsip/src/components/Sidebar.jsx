@@ -29,7 +29,7 @@ export default function Sidebar({ role, user, onUploadClick }) {
           isActive: location.pathname === '/admin' && !location.search.includes('tab=master')
         },
         { 
-          name: 'Data Master', 
+          name: 'Daftar Perangkat', 
           path: '/admin?tab=master', 
           icon: Users,
           isActive: location.pathname === '/admin' && location.search.includes('tab=master')
@@ -41,7 +41,7 @@ export default function Sidebar({ role, user, onUploadClick }) {
           isActive: location.pathname.startsWith('/admin/master-data') || location.pathname.startsWith('/admin/kelola-master')
         },
         { 
-          name: 'Manajemen Akun', 
+          name: 'Kelola Akun', 
           path: '/admin/kelola-akun', 
           icon: UserCheck,
           isActive: location.pathname.startsWith('/admin/kelola-akun')
